@@ -40,38 +40,9 @@ FILE *file;
 Reservation reservation;
 
 
-void reserver(){
-    printf("\tChoisir une date");
-    printf("\n\tJour: ");
-    scanf("%d", &reservation.dateReserv.jour);
-    printf("\tMois: ");
-    scanf("%d", &reservation.dateReserv.mois);
-    printf("\tAnnee: ");
-    scanf("%d", &reservation.dateReserv.annee);
-    printf("\tChoisir la ville de depart:\t");
-    //printf("\n\t1- Rabat");              zyad nzel 3liha
-    //printf("\n\t2- Casablanca");
-
-    scanf("%s", &reservation.villeDep);
-    printf("\tChoisir la ville d'arrivee:\t");
-    scanf("%s", &reservation.villeArr);
-    afficher_trains();
-    printf("\n\tChoisir un train:\t");
-    scanf("%d", &train);
-    printf("\n\tChoisir une classe:\t");
-    printf("\n\t1- 1ere classe");
-    printf("\n\t2- 2eme classe");
-    scanf("%d", &reservation.classe);
-    file = fopen("reservation.txt", "a");
-    fwrite(&reservation, sizeof(reservation), 1, file);
-    if(fwrite!=0)
-        printf("\tReservation effectuee avec succes");
-    else
-        printf("\tReservation non effectuee\n\tVeuillez reessayer");
-    fclose(file);
-}
 
 void menu(){
+    int choix;
     printf("\t******************************************");
     printf("\n\t\tLet's Travel with ONCF");
     printf("\n\t******************************************");
@@ -80,11 +51,7 @@ void menu(){
     printf("\n\t3- Sortir de l'application");
     printf("\n\n\tDonner votre choix: ");
     scanf("%d", &choix);
-    sous_menu(choix);
-}
-
-void sous_menu(int a){
-    switch(a){
+    switch(choix){
         case 1:
             espaceAdministrateur();
         break;
@@ -111,21 +78,21 @@ void espaceAdministrateur(){
         printf("\t******************************************");
         printf("\n\tEspace Administrateur");
         printf("\t******************************************");
-        printf("\n1- Ajouter un trajet");
-        printf("\n2- Modifier un trajet");
-        printf("\n3- Supprimer un trajet");
-        printf("\n4- Afficher les trajets");
-        printf("\n5- Retour");
-        printf("\nChoisir le service: ");
+        printf("\n/t1- Ajouter un trajet");
+        printf("\n/t2- Modifier un trajet");
+        printf("\n/t3- Supprimer un trajet");
+        printf("\n/t4- Afficher les trajets");
+        printf("\n/t5- Retour");
+        printf("\n/tChoisir le service: ");
         scanf("%d", &choix);
         menuGestionTrajets(choix);
     }
     else printf("Acces refusé.");
 }
 
-void ajouterTrajet(){
-    FILE *file;
+//Cette solution utilise les tableaux alors qu'il faut travailler avec fseek
 
+void ajouterTrajet(){
     printf("Identifiant du trajet : "); scanf("%d", &trajet.idTrajet);
     printf("Ville de depart : "); scanf("%s", &trajet.villeDep);
     printf("Ville d'arrivee : "); scanf("%s", &trajet.villeArr);
@@ -144,8 +111,6 @@ void ajouterTrajet(){
 }
 
 void modifierTrajet(){       
-    FILE *file;
-
     printf("Identifiant du trajet a modifier : "); scanf("%d", &nouveauTrajet.idTrajet);
     printf("Ville de depart : "); scanf("%s", &nouveauTrajet.villeDep);
     printf("Ville d'arrivee : "); scanf("%s", &nouveauTrajet.villeArr);
@@ -157,13 +122,13 @@ void modifierTrajet(){
     int nbTrajets=0;
     file = fopen("FTrajets", "r");
     while(fread(&trajet, sizeof(trajet), 1, file)){
-        trajets[nbTrajets]=trajet;
+        trajet[nbTrajets]=trajet; //prk ouvrir un fichier en tant que tableau !!
         nbTrajets++;
     }
     fclose(file); 
     remove("FTrajets");
 
-    FILE *nfile;
+    FILE *nfile;        
     nfile = fopen("FMTrajets","a");
     for (int i=0; i<nbTrajets; i++){
         if (trajets[i].idTrajet != nouveauTrajet.idTrajet)
@@ -177,7 +142,6 @@ void modifierTrajet(){
 }
 
 void supprimerTrajet(){
-        FILE *file;
         int IdS;
         printf("Identifiant du trajet a supprimer : "); scanf("%d", &IdS);
 
@@ -204,8 +168,6 @@ void supprimerTrajet(){
 }
 
 void afficherTrajet(){
-    
-        FILE *file;
         int nbTrajets = 0;
         file = fopen("FTrajets", "r");
 
@@ -247,11 +209,7 @@ void menuGestionTrajets(int a)
     }
 }
 
-
-
-
 int main(){
     menu();
     return 0;
 }
-
