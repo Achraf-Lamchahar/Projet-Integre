@@ -209,6 +209,70 @@ void menuGestionTrajets(int a)
     }
 }
 
+void espaceVoyageur(){
+    do{
+        printf("\t******************************************");
+        printf("\n\t\tEspace Voyageur");
+        printf("\n\t*****************************************");
+        printf("\n\t1- Voir les trains disponibles");
+        printf("\n\t2- Reserver");
+        printf("\n\t3- Revenir au menu principal");
+        printf("\n\t4- Quitter l'application");
+        printf("\n\n\tChoisir une operation:\t");
+        scanf("%d", opr);
+        switch(opr){
+            case 1:
+                 //afficher_trains();   
+                 break;
+            case 2:
+                reserver();
+                break;
+            case 3:
+                menu();
+                break;
+            case 4:
+                printf("\tFermeture de l'application");
+                return 0;
+            default:
+                printf("Choix invalide!");
+                
+        }
+    } while(opr!=4);
+}
+
+void reserver(){
+    struct Reservation reservation;
+    printf("\tChoisir une date");
+    printf("\n\tJour: ");
+    scanf("%d", &reservation.dateReserv.jour);
+    printf("\tMois: ");
+    scanf("%d", &reservation.dateReserv.mois);
+    printf("\tAnnee: ");
+    scanf("%d", &reservation.dateReserv.annee);
+    printf("\tChoisir la ville de depart:\t");
+    /*printf("\n\t1- Rabat");              //zyad nzel 3liha
+    printf("\n\t2- Casablanca");
+    printf("\n\t2- Tanger");
+    printf("\n\t2- Marrakech"); */   
+    scanf("%s", &reservation.villeDep);
+    printf("\tChoisir la ville d'arrivee:\t");
+    scanf("%s", &reservation.villeArr);
+    afficher_trains();
+    printf("\n\tChoisir un train:\t");
+    scanf("%d", &train);
+    printf("\n\tChoisir une classe:\t");
+    printf("\n\t1- 1ere classe");
+    printf("\n\t2- 2eme classe");
+    scanf("%d", &reservation.classe);
+    file = fopen("reservation.txt", "a");
+    fwrite(&reservation, sizeof(reservation), 1, file);
+    if(fwrite!=0)
+        printf("\tReservation effectuee avec succes");
+    else
+        printf("\tReservation non effectuee\n\tVeuillez reessayer");
+    fclose(file);
+}
+
 int main(){
     menu();
     return 0;
