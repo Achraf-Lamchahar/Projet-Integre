@@ -35,7 +35,7 @@ typedef struct STicket
 
 typedef struct STitre{
     char nom[15], prenom[15], villeDep[15], villeArr[15];
-    int idTitre;
+    int idTitre, nbrUtilisation;
 }STitre;
 
 STitre titre;
@@ -337,7 +337,7 @@ int rechercheTrain(int idTrainTrajet, STrain trains[30])
 int rechercheTitre(int idTitre, STitre titres[50])
 {
     int nbTitres = 0;
-    fileT = fopen("fichierTitresPermission.txt", "r");
+    fileT = fopen("fichierDesTitresPermission.txt", "r");
     while (fread(&titre, sizeof(titre), 1, fileT)){
         titres[nbTitres] = titre;
         nbTitres++;
@@ -478,7 +478,7 @@ int espaceTrajets()
             return 0;
         break;
         default:
-            printf("choix invalide, veuillez réessayer!\n");
+            printf("choix invalide, veuillez rÃ©essayer!\n");
             espaceTrajets();
         break;
     }
@@ -517,7 +517,7 @@ int espaceTrains()
             return 0;
         break;
         default:
-            printf("choix invalide, veuillez réessayer!\n");
+            printf("choix invalide, veuillez rÃ©essayer!\n");
             espaceTrains();
         break;
     }
@@ -610,7 +610,7 @@ int allerSimple()
                             int idTitre1, b1;
                             printf("\nEntrer l'identifiant de votre titre de permission: "); scanf("%d", &idTitre1);
                             int nbTitres = 0;
-                            fileT = fopen("fichierTitresPermission.txt", "r");
+                            fileT = fopen("fichierDesTitresPermission.txt", "r");
                             while (fread(&titre, sizeof(titre), 1, fileT)){
                                 titres[nbTitres] = titre;
                                 nbTitres++;
@@ -646,8 +646,34 @@ int allerSimple()
                                         switch(ch17){
                                         case 1:
                                             ;
-                                            (trajets[L1[0]].placesReservees)=(trajets[L1[0]].placesReservees)+1;
-                                            printf("\n%d", trajets[L1[0]].placesReservees);
+                                            char buf[15];
+                                            strcpy(buf,titres[b1].villeDep);
+                                            strcpy(titres[b1].villeDep,titres[b1].villeArr);
+                                            strcpy(titres[b1].villeArr,buf);
+                                            (titres[b1].nbrUtilisation)+=1;
+                                            remove("fichierDesTitresPermission.txt");
+                                            nfile = fopen("fichierNouveauTitres.txt","a");
+                                            for (int i=0; i<nbTitres; i++){
+                                                if (titres[i].idTitre!=titres[b1].idTitre)
+                                                    fwrite(&titres[i], sizeof(titres[i]), 1, nfile);
+
+                                                else
+                                                    fwrite(&titres[b1], sizeof(titres[b1]), 1, nfile);
+                                            }
+                                            fclose(nfile);
+                                            rename("fichierNouveauTitres.txt", "fichierDesTitresPermission.txt");
+                                            (trajets[L1[0]].placesReservees)+=1;
+                                            remove("fichierDesTrajets.txt");
+                                            nfile = fopen("fichierNouveauTrajets.txt","a");
+                                            for (int i=0; i<nbTrajets; i++){
+                                                if (strcmp(trajets[i].idTrajet,trajets[L1[0]].idTrajet)!=0)
+                                                    fwrite(&trajets[i], sizeof(trajets[i]), 1, nfile);
+
+                                                else
+                                                    fwrite(&trajets[L1[0]], sizeof(trajets[L1[0]]), 1, nfile);
+                                            }
+                                            fclose(nfile);
+                                            rename("fichierNouveauTrajets.txt", "fichierDesTrajets.txt");
                                             file2 = fopen("fichierTickets.txt", "a");
                                             fwrite(&ticket, sizeof(ticket), 1, file2);
                                             fclose(file2);
@@ -659,7 +685,7 @@ int allerSimple()
                                             return 0;
                                         break;
                                         default:
-                                            printf("choix invalide, veuillez réessayer!\n");
+                                            printf("choix invalide, veuillez rÃ©essayer!\n");
                                             allerSimple();
                                         break;
                                         }
@@ -672,7 +698,18 @@ int allerSimple()
                                 printf("\nLe titre de permission ayant cet identifiant n'existe pas.");
                         break;
                         case 2:
-                            trajets[L1[0]].placesReservees++;
+                            (trajets[L1[0]].placesReservees)+=1;
+                            remove("fichierDesTrajets.txt");
+                            nfile = fopen("fichierNouveauTrajets.txt","a");
+                            for (int i=0; i<nbTrajets; i++){
+                                if (strcmp(trajets[i].idTrajet,trajets[L1[0]].idTrajet)!=0)
+                                    fwrite(&trajets[i], sizeof(trajets[i]), 1, nfile);
+
+                                else
+                                    fwrite(&trajets[L1[0]], sizeof(trajets[L1[0]]), 1, nfile);
+                            }
+                            fclose(nfile);
+                            rename("fichierNouveauTrajets.txt", "fichierDesTrajets.txt");
                             file2 = fopen("fichierTickets.txt", "a");
                             fwrite(&ticket, sizeof(ticket), 1, file2);
                             fclose(file2);
@@ -689,14 +726,14 @@ int allerSimple()
                             printf("\nLa reservation est bien faite. Merci.");
                         break;
                         default:
-                            printf("choix invalide, veuillez réessayer!\n");
+                            printf("choix invalide, veuillez rÃ©essayer!\n");
                             allerSimple();
                         break;
                     }
                     }while(ch15!=2);
                 break;
                 default:
-                    printf("choix invalide, veuillez réessayer!\n");
+                    printf("choix invalide, veuillez rÃ©essayer!\n");
                     allerSimple();
                 break;
                 }
@@ -722,9 +759,9 @@ int allerSimple()
                     int ch19, inc;
                     do
                     {
-                    printf("\nEntrer le numero du train où vous voulez reserver: "); scanf("%d", &inc);
+                    printf("\nEntrer le numero du train oÃ¹ vous voulez reserver: "); scanf("%d", &inc);
                     while(inc>in){
-                        printf("\nEntrer le numero du train où vous voulez reserver: "); scanf("%d", &inc);
+                        printf("\nEntrer le numero du train oÃ¹ vous voulez reserver: "); scanf("%d", &inc);
                     }
                     printf("\nVous etes un EIOR?");
                     printf("\nOui           |        taper<1>");
@@ -769,18 +806,30 @@ int allerSimple()
                                         scanf("%d", &ch17);
                                         switch(ch17){
                                         case 1:
-                                            trajets[L1[inc-1]].placesReservees++;
+                                            (trajets[L1[inc-1]].placesReservees)+=1;
+                                            remove("fichierDesTrajets.txt");
+                                            nfile = fopen("fichierNouveauTrajets.txt","a");
+                                            for (int i=0; i<nbTrajets; i++){
+                                                if (strcmp(trajets[i].idTrajet,trajets[L1[inc-1]].idTrajet)!=0)
+                                                    fwrite(&trajets[i], sizeof(trajets[i]), 1, nfile);
+
+                                                else
+                                                    fwrite(&trajets[L1[inc-1]], sizeof(trajets[L1[inc-1]]), 1, nfile);
+                                            }
+                                            fclose(nfile);
+                                            rename("fichierNouveauTrajets.txt", "fichierDesTrajets.txt");
                                             file2 = fopen("fichierTickets.txt", "a");
                                             fwrite(&ticket, sizeof(ticket), 1, file2);
                                             fclose(file2);
                                             printf("\nLa reservation est bien faite. Merci.");
+                                            return 0;
                                         break;
                                         case 2:
                                             printf("\nRetour vers le menu principal.\n");
                                             return 0;
                                         break;
                                         default:
-                                            printf("choix invalide, veuillez réessayer!\n");
+                                            printf("choix invalide, veuillez rÃ©essayer!\n");
                                             allerSimple();
                                         break;
                                         }
@@ -793,7 +842,18 @@ int allerSimple()
                                 printf("\nLe titre de permission ayant cet identifiant n'existe pas.");
                         break;
                         case 2:                                                                                     // +
-                            trajets[L1[inc-1]].placesReservees++;
+                            (trajets[L1[inc-1]].placesReservees)+=1;
+                            remove("fichierDesTrajets.txt");
+                            nfile = fopen("fichierNouveauTrajets.txt","a");
+                            for (int i=0; i<nbTrajets; i++){
+                                if (strcmp(trajets[i].idTrajet,trajets[L1[inc-1]].idTrajet)!=0)
+                                    fwrite(&trajets[i], sizeof(trajets[i]), 1, nfile);
+
+                                else
+                                    fwrite(&trajets[L1[inc-1]], sizeof(trajets[L1[inc-1]]), 1, nfile);
+                            }
+                            fclose(nfile);
+                            rename("fichierNouveauTrajets.txt", "fichierDesTrajets.txt");
                             file2 = fopen("fichierTickets.txt", "a");
                             fwrite(&ticket, sizeof(ticket), 1, file2);
                             fclose(file2);
@@ -810,14 +870,14 @@ int allerSimple()
                             printf("\nLa reservation est bien faite. Merci.");
                         break;
                         default:
-                            printf("choix invalide, veuillez réessayer!\n");
+                            printf("choix invalide, veuillez rÃ©essayer!\n");
                             allerSimple();
                         break;
                     }
                     }while(ch19!=2);
                 break;
                 default:
-                    printf("choix invalide, veuillez réessayer!\n");
+                    printf("choix invalide, veuillez rÃ©essayer!\n");
                     allerSimple();
                 break;
                 }
@@ -875,7 +935,7 @@ int espaceReservation()
                 return 0;
             break;
             default:
-                printf("choix invalide, veuillez réessayer!\n");
+                printf("choix invalide, veuillez rÃ©essayer!\n");
                 espaceVoyageur();
             break;
         }
@@ -906,7 +966,7 @@ int espaceVoyageur(){
                 return 0;
             break;
             default:
-                printf("choix invalide, veuillez réessayer!\n");
+                printf("choix invalide, veuillez rÃ©essayer!\n");
                 espaceVoyageur();
             break;
         }
@@ -944,7 +1004,7 @@ int espaceAdministrateur()
                 return 0;
             break;
             default:
-                printf("choix invalide, veuillez réessayer!\n");
+                printf("choix invalide, veuillez rÃ©essayer!\n");
                 espaceAdministrateur();
             break;
         }
