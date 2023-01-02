@@ -28,7 +28,7 @@ typedef struct STrajet
 
 typedef struct STicket
 {
-    SDate dateDep, dateRet;
+    SDate dateDep;
     char stationDep[20], stationArr[20], nom[15], prenom[15];
 
 }STicket;
@@ -47,6 +47,7 @@ STrain train;
 STrain NVtrain;
 STrain trains[30];
 STicket ticket;
+STicket NVticket;
 
 FILE* file;
 FILE* file1;
@@ -493,9 +494,369 @@ int espaceTrains()
     } while (choix != 5);
 }
 
+int allerSimpleVerifi(int nbTrajets, STrajet trajets[50], char buff[15], STicket ticket)
+{
+    int in=0, L1[5];
+    for (int i=0; i<nbTrajets; i++)
+    {
+        if(strcmp(trajets[i].idTrajetJour, buff)==0 && trajets[i].placesReservees<trajets[i].trajetTrain.nbrPlacesMax)
+        {
+            L1[in]=i;
+            in++;
+            printf("\n%d-Ville de depart : %s", in, trajets[i].villeDep);
+            printf("\nVille d'arrivee : %s", trajets[i].villeArr);
+            printf("\nPrix : %f DH", trajets[i].Prix);
+            printf("\nTrain : %s", trajets[i].trajetTrain.nomTrain);
+            printf("\nHeure de depart : %s:%s", trajets[i].heureDep.heure, trajets[i].heureDep.minute);
+            printf("\nHeure d'arrivee : %s:%s", trajets[i].heureArr.heure, trajets[i].heureArr.minute);
+            printf("\nDuree : %sh%smin", trajets[i].Duree.heure, trajets[i].Duree.minute);
+            printf("\nDate : %s/%s/%s\n", trajets[i].dateTrajet.jour, trajets[i].dateTrajet.mois, trajets[i].dateTrajet.annee);
+        }
+    }
+    switch(in){
+        case 0:
+            printf("\nLes trains sont tous pleins.");
+        break;
+        case 1:
+            ;
+            int ch14;
+            do
+            {
+            printf("\nVoulez-vous reserver?");
+            printf("\nOui           |        taper<1>");
+            printf("\nNon           |        taper<2>");
+            printf("\n=====> ");
+            scanf("%d", &ch14);
+            switch(ch14){
+            case 2:
+                printf("\nRetour vers le menu principal.\n");
+                return 0;
+            break;
+            case 1:
+                ;
+                int ch15;
+                do
+                {
+                printf("\nVous etes un EIOR?");
+                printf("\nOui           |        taper<1>");
+                printf("\nNon           |        taper<2>");
+                printf("\n====> ");
+                scanf("%d", &ch15);
+                switch(ch15){
+                    case 1:
+                        ;
+                        int idTitre1, b1;
+                        printf("\nEntrer l'identifiant de votre titre de permission: "); scanf("%d", &idTitre1);
+                        int nbTitres = 0;
+                        fileT = fopen("fichierDesTitresPermission.txt", "r");
+                        while (fread(&titre, sizeof(titre), 1, fileT)){
+                            titres[nbTitres] = titre;
+                            nbTitres++;
+                        }
+                        fclose(fileT);
+                        if (rechercheTitre(idTitre1, titres, nbTitres))
+                        {
+                            for(int i=0; i<nbTitres; i++)
+                            {
+                                if(titres[i].idTitre==idTitre1)
+                                    b1=i;
+                            }
+                            if(strcmp(trajets[L1[0]].villeDep,titres[b1].villeDep)==0 && strcmp(trajets[L1[0]].villeArr,titres[b1].villeArr)==0)
+                            {
+                                if(titres[b1].nbrUtilisation<2)
+                                {
+                                    printf("\nVoici le billet de ce voyage:\n");
+                                    printf("\nVille de depart : %s", trajets[L1[0]].villeDep);
+                                    printf("\nVille d'arrivee : %s", trajets[L1[0]].villeArr);
+                                    printf("\nPrix : %f DH", (trajets[L1[0]].Prix)*0.3);
+                                    printf("\nTrain : %s", trajets[L1[0]].trajetTrain.nomTrain);
+                                    printf("\nHeure de depart : %s:%s", trajets[L1[0]].heureDep.heure, trajets[L1[0]].heureDep.minute);
+                                    printf("\nHeure d'arrivee : %s:%s", trajets[L1[0]].heureArr.heure, trajets[L1[0]].heureArr.minute);
+                                    printf("\nDuree : %sh%smin", trajets[L1[0]].Duree.heure, trajets[L1[0]].Duree.minute);
+                                    printf("\nDate : %s/%s/%s", trajets[L1[0]].dateTrajet.jour, trajets[L1[0]].dateTrajet.mois, trajets[L1[0]].dateTrajet.annee);
+                                    printf("\n");
+                                    int ch17;
+                                    do
+                                    {
+                                        printf("\nvoulez-vous reserver?");
+                                        printf("\nOui           |        taper<1>");
+                                        printf("\nNon           |        taper<2>");
+                                        printf("\n=====> ");
+                                        scanf("%d", &ch17);
+                                        switch(ch17){
+                                        case 1:
+                                            ;
+                                            char buf[15];
+                                            strcpy(buf,titres[b1].villeDep);
+                                            strcpy(titres[b1].villeDep,titres[b1].villeArr);
+                                            strcpy(titres[b1].villeArr,buf);
+                                            (titres[b1].nbrUtilisation)+=1;
+                                            remove("fichierDesTitresPermission.txt");
+                                            nfile = fopen("fichierNouveauTitres.txt","a");
+                                            for (int i=0; i<nbTitres; i++){
+                                                if (titres[i].idTitre!=titres[b1].idTitre)
+                                                    fwrite(&titres[i], sizeof(titres[i]), 1, nfile);
 
+                                                else
+                                                    fwrite(&titres[b1], sizeof(titres[b1]), 1, nfile);
+                                            }
+                                            fclose(nfile);
+                                            rename("fichierNouveauTitres.txt", "fichierDesTitresPermission.txt");
+                                            (trajets[L1[0]].placesReservees)+=1;
+                                            remove("fichierDesTrajets.txt");
+                                            nfile = fopen("fichierNouveauTrajets.txt","a");
+                                            for (int i=0; i<nbTrajets; i++){
+                                                if (strcmp(trajets[i].idTrajet,trajets[L1[0]].idTrajet)!=0)
+                                                    fwrite(&trajets[i], sizeof(trajets[i]), 1, nfile);
 
-int allerSimple()
+                                                else
+                                                    fwrite(&trajets[L1[0]], sizeof(trajets[L1[0]]), 1, nfile);
+                                            }
+                                            fclose(nfile);
+                                            rename("fichierNouveauTrajets.txt", "fichierDesTrajets.txt");
+                                            file2 = fopen("fichierTickets.txt", "a");
+                                            fwrite(&ticket, sizeof(ticket), 1, file2);
+                                            fclose(file2);
+                                            printf("\nLa reservation est bien faite. Merci.\n");
+                                            return 0;
+                                        break;
+                                        case 2:
+                                            printf("\nRetour vers le menu principal.\n");
+                                            return 0;
+                                        break;
+                                        default:
+                                            printf("choix invalide, veuillez reessayer!\n");
+                                            allerSimple();
+                                        break;
+                                        }
+                                    }while(ch17!=2);
+                                }
+                                else
+                                    printf("\nCe titre de permission est deja utilise!");
+                            }
+                            else
+                                printf("\nVous ne pouvez pas utiliser ce titre de permission pour acheter ce billet.");
+                        }
+                        else
+                            printf("\nLe titre de permission ayant cet identifiant n'existe pas.");
+                    return 0;
+                    break;
+                    case 2:
+                        (trajets[L1[0]].placesReservees)+=1;
+                        remove("fichierDesTrajets.txt");
+                        nfile = fopen("fichierNouveauTrajets.txt","a");
+                        for (int i=0; i<nbTrajets; i++){
+                            if (strcmp(trajets[i].idTrajet,trajets[L1[0]].idTrajet)!=0)
+                                fwrite(&trajets[i], sizeof(trajets[i]), 1, nfile);
+
+                            else
+                                fwrite(&trajets[L1[0]], sizeof(trajets[L1[0]]), 1, nfile);
+                        }
+                        fclose(nfile);
+                        rename("fichierNouveauTrajets.txt", "fichierDesTrajets.txt");
+                        file2 = fopen("fichierTickets.txt", "a");
+                        fwrite(&ticket, sizeof(ticket), 1, file2);
+                        fclose(file2);
+                        printf("\nVoici le billet de votre voyage:\n");
+                        printf("\nVille de depart : %s", trajets[L1[0]].villeDep);
+                        printf("\nVille d'arrivee : %s", trajets[L1[0]].villeArr);
+                        printf("\nPrix : %f DH", trajets[L1[0]].Prix);
+                        printf("\nTrain : %s", trajets[L1[0]].trajetTrain.nomTrain);
+                        printf("\nHeure de depart : %s:%s", trajets[L1[0]].heureDep.heure, trajets[L1[0]].heureDep.minute);
+                        printf("\nHeure d'arrivee : %s:%s", trajets[L1[0]].heureArr.heure, trajets[L1[0]].heureArr.minute);
+                        printf("\nDuree : %sh%smin", trajets[L1[0]].Duree.heure, trajets[L1[0]].Duree.minute);
+                        printf("\nDate : %s/%s/%s", trajets[L1[0]].dateTrajet.jour, trajets[L1[0]].dateTrajet.mois, trajets[L1[0]].dateTrajet.annee);
+                        printf("\n");
+                        printf("\nLa reservation est bien faite. Merci.\n");
+                    return 0;
+                    break;
+                    default:
+                        printf("choix invalide, veuillez réessayer!\n");
+                        allerSimple();
+                    break;
+                }
+                }while(ch15!=2);
+            break;
+            default:
+                printf("choix invalide, veuillez réessayer!\n");
+                allerSimple();
+            break;
+            }
+            }while(ch14!=2);
+        break;
+        default:
+            ;
+            int ch18;
+            do
+            {
+            printf("\nVoulez-vous reserver?");
+            printf("\nOui           |        taper<1>");
+            printf("\nNon           |        taper<2>");
+            printf("\n====> ");
+            scanf("%d", &ch18);
+            switch(ch18){
+            case 2:
+                printf("\nRetour vers le menu principal.\n");
+                return 0;
+            break;
+            case 1:
+                ;
+                int ch19, inc;
+                do
+                {
+                printf("\nEntrer votre choix: "); scanf("%d", &inc);
+                while(inc>in){
+                    printf("\nEntrer votre choix: "); scanf("%d", &inc);
+                }
+                printf("\nVous etes un EIOR?");
+                printf("\nOui           |        taper<1>");
+                printf("\nNon           |        taper<2>");
+                printf("\n=====> "); scanf("%d", &ch19);
+                switch(ch19){
+                    case 1:
+                        ;
+                        int idTitre1, b1;
+                        printf("\nEntrer l'identifiant de votre titre de permission: "); scanf("%d", &idTitre1);
+                        int nbTitres = 0;
+                        fileT = fopen("fichierDesTitresPermission.txt", "r");
+                        while (fread(&titre, sizeof(titre), 1, fileT)){
+                            titres[nbTitres] = titre;
+                            nbTitres++;
+                        }
+                        fclose(fileT);
+                        if (rechercheTitre(idTitre1, titres, nbTitres))
+                        {
+                            for(int i=0; i<nbTitres; i++)
+                            {
+                                if(titres[i].idTitre==idTitre1)
+                                    b1=i;
+                            }
+                            if(strcmp(trajets[L1[inc-1]].villeDep,titres[b1].villeDep)==0 && strcmp(trajets[L1[inc-1]].villeArr,titres[b1].villeArr)==0)
+                            {
+                                if(titres[b1].nbrUtilisation<2)
+                                {
+                                    printf("\nVoici le billet de ce voyage:\n");
+                                    printf("\nVille de depart : %s", trajets[L1[inc-1]].villeDep);
+                                    printf("\nVille d'arrivee : %s", trajets[L1[inc-1]].villeArr);
+                                    printf("\nPrix : %f DH", (trajets[L1[inc-1]].Prix)*0.3);
+                                    printf("\nTrain : %s", trajets[L1[inc-1]].trajetTrain.nomTrain);
+                                    printf("\nHeure de depart : %s:%s", trajets[L1[inc-1]].heureDep.heure, trajets[L1[inc-1]].heureDep.minute);
+                                    printf("\nHeure d'arrivee : %s:%s", trajets[L1[inc-1]].heureArr.heure, trajets[L1[inc-1]].heureArr.minute);
+                                    printf("\nDuree : %sh%smin", trajets[L1[inc-1]].Duree.heure, trajets[L1[inc-1]].Duree.minute);
+                                    printf("\nDate : %s/%s/%s", trajets[L1[inc-1]].dateTrajet.jour, trajets[L1[inc-1]].dateTrajet.mois, trajets[L1[inc-1]].dateTrajet.annee);
+                                    printf("\n");
+                                    int ch17;
+                                    do
+                                    {
+                                        printf("\nvoulez-vous reserver?");
+                                        printf("\nOui           |        taper<1>");
+                                        printf("\nNon           |        taper<2>");
+                                        printf("\n=====> ");
+                                        scanf("%d", &ch17);
+                                        switch(ch17){
+                                        case 1:
+                                            ;
+                                            char buf[15];
+                                            strcpy(buf,titres[b1].villeDep);
+                                            strcpy(titres[b1].villeDep,titres[b1].villeArr);
+                                            strcpy(titres[b1].villeArr,buf);
+                                            (titres[b1].nbrUtilisation)+=1;
+                                            remove("fichierDesTitresPermission.txt");
+                                            nfile = fopen("fichierNouveauTitres.txt","a");
+                                            for (int i=0; i<nbTitres; i++){
+                                                if (titres[i].idTitre!=titres[b1].idTitre)
+                                                    fwrite(&titres[i], sizeof(titres[i]), 1, nfile);
+
+                                                else
+                                                    fwrite(&titres[b1], sizeof(titres[b1]), 1, nfile);
+                                            }
+                                            fclose(nfile);
+                                            rename("fichierNouveauTitres.txt", "fichierDesTitresPermission.txt");
+                                            (trajets[L1[inc-1]].placesReservees)+=1;
+                                            remove("fichierDesTrajets.txt");
+                                            nfile = fopen("fichierNouveauTrajets.txt","a");
+                                            for (int i=0; i<nbTrajets; i++){
+                                                if (strcmp(trajets[i].idTrajet,trajets[L1[0]].idTrajet)!=0)
+                                                    fwrite(&trajets[i], sizeof(trajets[i]), 1, nfile);
+                                                else
+                                                    fwrite(&trajets[L1[inc-1]], sizeof(trajets[L1[inc-1]]), 1, nfile);
+                                            }
+                                            fclose(nfile);
+                                            rename("fichierNouveauTrajets.txt", "fichierDesTrajets.txt");
+                                            file2 = fopen("fichierTickets.txt", "a");
+                                            fwrite(&ticket, sizeof(ticket), 1, file2);
+                                            fclose(file2);
+                                            printf("\nLa reservation est bien faite. Merci.\n");
+                                            return 0;
+                                        break;
+                                        case 2:
+                                            printf("\nRetour vers le menu principal.\n");
+                                            return 0;
+                                        break;
+                                        default:
+                                            printf("choix invalide, veuillez reessayer!\n");
+                                            allerSimple();
+                                        break;
+                                        }
+                                    }while(ch17!=2);
+                                }
+                                else
+                                    printf("\nCe titre de permission est deja utilise!");
+                            }
+                            else
+                                printf("\nVous ne pouvez pas utiliser ce titre de permission pour acheter ce billet.");
+                        }
+                        else
+                            printf("\nLe titre de permission ayant cet identifiant n'existe pas.");
+                    return 0;
+                    break;
+                    case 2:
+                        (trajets[L1[inc-1]].placesReservees)+=1;
+                        remove("fichierDesTrajets.txt");
+                        nfile = fopen("fichierNouveauTrajets.txt","a");
+                        for (int i=0; i<nbTrajets; i++){
+                            if (strcmp(trajets[i].idTrajet,trajets[L1[inc-1]].idTrajet)!=0)
+                                fwrite(&trajets[i], sizeof(trajets[i]), 1, nfile);
+
+                            else
+                                fwrite(&trajets[L1[inc-1]], sizeof(trajets[L1[inc-1]]), 1, nfile);
+                        }
+                        fclose(nfile);
+                        rename("fichierNouveauTrajets.txt", "fichierDesTrajets.txt");
+                        file2 = fopen("fichierTickets.txt", "a");
+                        fwrite(&ticket, sizeof(ticket), 1, file2);
+                        fclose(file2);
+                        printf("\nVoici le billet de votre voyage:\n");
+                        printf("\nVille de depart : %s", trajets[L1[inc-1]].villeDep);
+                        printf("\nVille d'arrivee : %s", trajets[L1[inc-1]].villeArr);
+                        printf("\nPrix : %f DH", trajets[L1[inc-1]].Prix);
+                        printf("\nTrain : %s", trajets[L1[inc-1]].trajetTrain.nomTrain);
+                        printf("\nHeure de depart : %s:%s", trajets[L1[inc-1]].heureDep.heure, trajets[L1[inc-1]].heureDep.minute);
+                        printf("\nHeure d'arrivee : %s:%s", trajets[L1[inc-1]].heureArr.heure, trajets[L1[inc-1]].heureArr.minute);
+                        printf("\nDuree : %sh%smin", trajets[L1[inc-1]].Duree.heure, trajets[L1[inc-1]].Duree.minute);
+                        printf("\nDate : %s/%s/%s", trajets[L1[inc-1]].dateTrajet.jour, trajets[L1[inc-1]].dateTrajet.mois, trajets[L1[inc-1]].dateTrajet.annee);
+                        printf("\n");
+                        printf("\nLa reservation est bien faite. Merci.\n");
+                    return 0;
+                    break;
+                    default:
+                        printf("choix invalide, veuillez réessayer!\n");
+                        allerSimple();
+                    break;
+                }
+                }while(ch19!=2);
+            break;
+            default:
+                printf("choix invalide, veuillez réessayer!\n");
+                allerSimple();
+            break;
+            }
+            }while(ch18!=2);
+        break;
+    }
+}
+
+void allerSimple()
 {
     char buffer[6], buff[15];
     printf("\nVeillez remplir les champs suivants:");
@@ -529,53 +890,113 @@ int allerSimple()
 
     if(rechercheTrajetJour(buff, trajets, nbTrajets))
     {
-        int in=0, L1[5];
-        for (int i=0; i<nbTrajets; i++)
+        allerSimpleVerifi(nbTrajets, trajets, buff, ticket);
+    }
+    else
+        printf("\nPas de trains disponibles.");
+}
+
+int allerRetour()
+{
+    int ch21;
+    do
+    {
+        printf("\nVous etes un EIOR?");
+        printf("\nOui           |        taper<1>");
+        printf("\nNon           |        taper<2>");
+        printf("\n====> ");
+        scanf("%d", &ch21);
+        switch(ch21)
         {
-            if(strcmp(trajets[i].idTrajetJour, buff)==0 && trajets[i].placesReservees<trajets[i].trajetTrain.nbrPlacesMax)
-            {
-                L1[in]=i;
-                in++;
-                printf("\n%d-Ville de depart : %s", in, trajets[i].villeDep);
-                printf("\nVille d'arrivee : %s", trajets[i].villeArr);
-                printf("\nPrix : %f DH", trajets[i].Prix);
-                printf("\nTrain : %s", trajets[i].trajetTrain.nomTrain);
-                printf("\nHeure de depart : %s:%s", trajets[i].heureDep.heure, trajets[i].heureDep.minute);
-                printf("\nHeure d'arrivee : %s:%s", trajets[i].heureArr.heure, trajets[i].heureArr.minute);
-                printf("\nDuree : %sh%smin", trajets[i].Duree.heure, trajets[i].Duree.minute);
-                printf("\nDate : %s/%s/%s\n", trajets[i].dateTrajet.jour, trajets[i].dateTrajet.mois, trajets[i].dateTrajet.annee);
+        case 1:
+            char buffer[6], buffer1[6], buff[15], buff1[15], dateRetJour[3], dateRetMois[3], dateRetAnnee[5];
+            printf("\nVeillez remplir les champs suivants:");
+            printf("\nNom: "); scanf("%s", &ticket.nom);
+            printf("\nPrenom: "); scanf("%s", &ticket.prenom);
+            printf("\nVille de depart: "); scanf("%s", &ticket.stationDep);
+            printf("\nVille d'arrivee: "); scanf("%s", &ticket.stationArr);
+            printf("\nDate de depart: ");
+            printf("\nJour (en 2 chiffres): "); scanf("%s", &ticket.dateDep.jour);
+            printf("\nMois (en 2 chiffres): "); scanf("%s", &ticket.dateDep.mois);
+            printf("\nAnnee (en 4 chiffres): "); scanf("%s", &ticket.dateDep.annee);
+            printf("\n");
+            printf("\nDate de retour: ");
+            printf("\nJour (en 2 chiffres): "); scanf("%s", &dateRetJour);
+            printf("\nMois (en 2 chiffres): "); scanf("%s", &dateRetMois);
+            printf("\nAnnee (en 4 chiffres): "); scanf("%s", &dateRetAnnee);
+            printf("\n");
+
+            buffer[0]=toupper(ticket.stationDep[0]);
+            buffer[1]=toupper(ticket.stationDep[1]);
+            buffer[2]=toupper(ticket.stationArr[0]);
+            buffer[3]=toupper(ticket.stationArr[1]);
+
+            buffer1[0]=toupper(ticket.stationArr[0]);
+            buffer1[1]=toupper(ticket.stationArr[1]);
+            buffer1[2]=toupper(ticket.stationDep[0]);
+            buffer1[3]=toupper(ticket.stationDep[1]);
+
+            strcpy(buff, buffer);
+            strcat(buff,ticket.dateDep.jour);
+            strcat(buff,ticket.dateDep.mois);
+            strcat(buff,ticket.dateDep.annee);
+
+            strcpy(buff1, buffer1);
+            strcat(buff1,dateRetJour);
+            strcat(buff1,dateRetMois);
+            strcat(buff1,dateRetAnnee);
+
+            int nbTrajets = 0;
+            file = fopen("fichierDesTrajets.txt", "r");
+            while (fread(&trajet, sizeof(trajet), 1, file)){
+                trajets[nbTrajets] = trajet;
+                nbTrajets++;
             }
-        }
-        switch(in){
-            case 0:
-                printf("\nLes trains sont tous pleins.");
-            break;
-            case 1:
-                ;
-                int ch14;
-                do
+            fclose(file);
+
+            if(rechercheTrajetJour(buff, trajets, nbTrajets))
+            {
+                if(rechercheTrajetJour(buff1, trajets, nbTrajets))
                 {
-                printf("\nVoulez-vous reserver?");
-                printf("\nOui           |        taper<1>");
-                printf("\nNon           |        taper<2>");
-                printf("\n=====> ");
-                scanf("%d", &ch14);
-                switch(ch14){
-                case 2:
-                    printf("\nRetour vers le menu principal.\n");
-                    return 0;
-                break;
-                case 1:
-                    ;
-                    int ch15;
-                    do
+                    printf("\n           <<<<<ALLER:>>>>>");
+                    printf("\n\nTrains proposes pour la date de depart: \n");
+                    int in=0, L1[5];
+                    for (int i=0; i<nbTrajets; i++)
                     {
-                    printf("\nVous etes un EIOR?");
-                    printf("\nOui           |        taper<1>");
-                    printf("\nNon           |        taper<2>");
-                    printf("\n====> ");
-                    scanf("%d", &ch15);
-                    switch(ch15){
+                        if(strcmp(trajets[i].idTrajetJour, buff)==0 && trajets[i].placesReservees<trajets[i].trajetTrain.nbrPlacesMax)
+                        {
+                            L1[in]=i;
+                            in++;
+                            printf("\n%d-Ville de depart : %s", in, trajets[i].villeDep);
+                            printf("\nVille d'arrivee : %s", trajets[i].villeArr);
+                            printf("\nPrix : %f DH", trajets[i].Prix);
+                            printf("\nTrain : %s", trajets[i].trajetTrain.nomTrain);
+                            printf("\nHeure de depart : %s:%s", trajets[i].heureDep.heure, trajets[i].heureDep.minute);
+                            printf("\nHeure d'arrivee : %s:%s", trajets[i].heureArr.heure, trajets[i].heureArr.minute);
+                            printf("\nDuree : %sh%smin", trajets[i].Duree.heure, trajets[i].Duree.minute);
+                            printf("\nDate : %s/%s/%s\n", trajets[i].dateTrajet.jour, trajets[i].dateTrajet.mois, trajets[i].dateTrajet.annee);
+                        }
+                    }
+                    switch(in)
+                    {
+                    case 0:
+                        printf("\nLes trains sont tous pleins.");
+                    break;
+                    case 1:
+                        ;
+                        int ch14;
+                        do
+                        {
+                        printf("\nVoulez-vous voir le billet avec la remise?");
+                        printf("\nOui           |        taper<1>");
+                        printf("\nNon           |        taper<2>");
+                        printf("\n=====> ");
+                        scanf("%d", &ch14);
+                        switch(ch14){
+                        case 2:
+                            printf("\nRetour vers le menu principal.\n");
+                            return 0;
+                        break;
                         case 1:
                             ;
                             int idTitre1, b1;
@@ -596,7 +1017,7 @@ int allerSimple()
                                 }
                                 if(strcmp(trajets[L1[0]].villeDep,titres[b1].villeDep)==0 && strcmp(trajets[L1[0]].villeArr,titres[b1].villeArr)==0)
                                 {
-                                    if(titres[b1].nbrUtilisation<2)
+                                    if(titres[b1].nbrUtilisation==0)
                                     {
                                         printf("\nVoici le billet de ce voyage:\n");
                                         printf("\nVille de depart : %s", trajets[L1[0]].villeDep);
@@ -611,55 +1032,306 @@ int allerSimple()
                                         int ch17;
                                         do
                                         {
-                                            printf("\nvoulez-vous reserver?");
+                                            printf("\nvoulez-vous l'ajouter au panier?");
                                             printf("\nOui           |        taper<1>");
                                             printf("\nNon           |        taper<2>");
                                             printf("\n=====> ");
                                             scanf("%d", &ch17);
-                                            switch(ch17){
+                                            switch(ch17)
+                                            {
                                             case 1:
-                                                ;
-                                                char buf[15];
-                                                strcpy(buf,titres[b1].villeDep);
-                                                strcpy(titres[b1].villeDep,titres[b1].villeArr);
-                                                strcpy(titres[b1].villeArr,buf);
-                                                (titres[b1].nbrUtilisation)+=1;
-                                                remove("fichierDesTitresPermission.txt");
-                                                nfile = fopen("fichierNouveauTitres.txt","a");
-                                                for (int i=0; i<nbTitres; i++){
-                                                    if (titres[i].idTitre!=titres[b1].idTitre)
-                                                        fwrite(&titres[i], sizeof(titres[i]), 1, nfile);
+                                                strcpy(NVtrajet.idTrajet,trajets[L1[0]].idTrajet);
+                                                strcpy(NVtrajet.idTrajetJour,trajets[L1[0]].idTrajetJour);
+                                                strcpy(NVtrajet.villeDep,trajets[L1[0]].villeDep);
+                                                strcpy(NVtrajet.villeArr,trajets[L1[0]].villeArr);
+                                                strcpy(NVtrajet.trajetTrain.nomTrain,trajets[L1[0]].trajetTrain.nomTrain);
+                                                NVtrajet.trajetTrain.idTrain=trajets[L1[0]].trajetTrain.idTrain;
+                                                NVtrajet.trajetTrain.nbrPlacesMax=trajets[L1[0]].trajetTrain.nbrPlacesMax;
+                                                strcpy(NVtrajet.heureDep.heure,trajets[L1[0]].heureDep.heure);
+                                                strcpy(NVtrajet.heureDep.minute,trajets[L1[0]].heureDep.minute);
+                                                strcpy(NVtrajet.heureArr.heure,trajets[L1[0]].heureArr.heure);
+                                                strcpy(NVtrajet.heureArr.minute,trajets[L1[0]].heureArr.minute);
+                                                strcpy(NVtrajet.Duree.heure,trajets[L1[0]].Duree.heure);
+                                                strcpy(NVtrajet.Duree.minute,trajets[L1[0]].Duree.minute);
+                                                strcpy(NVtrajet.dateTrajet.jour,trajets[L1[0]].dateTrajet.jour);
+                                                strcpy(NVtrajet.dateTrajet.mois,trajets[L1[0]].dateTrajet.mois);
+                                                strcpy(NVtrajet.dateTrajet.annee,trajets[L1[0]].dateTrajet.annee);
+                                                NVtrajet.Prix=(trajets[L1[0]].Prix)*0.3;
+                                                NVtrajet.placesReservees=trajets[L1[0]].placesReservees;
 
-                                                    else
-                                                        fwrite(&titres[b1], sizeof(titres[b1]), 1, nfile);
+                                                printf("\n           <<<<<Retour:>>>>>");
+                                                printf("\n\nTrains proposes pour la date de retour: \n");
+                                                int im=0, L2[5];
+                                                for (int i=0; i<nbTrajets; i++)
+                                                {
+                                                    if(strcmp(trajets[i].idTrajetJour, buff1)==0 && trajets[i].placesReservees<trajets[i].trajetTrain.nbrPlacesMax)
+                                                    {
+                                                        L2[im]=i;
+                                                        im++;
+                                                        printf("\n%d-Ville de depart : %s", im, trajets[i].villeDep);
+                                                        printf("\nVille d'arrivee : %s", trajets[i].villeArr);
+                                                        printf("\nPrix original: %f DH", trajets[i].Prix);
+                                                        printf("\nPrix apres remise: %f DH", (trajets[i].Prix)*0.3);
+                                                        printf("\nTrain : %s", trajets[i].trajetTrain.nomTrain);
+                                                        printf("\nHeure de depart : %s:%s", trajets[i].heureDep.heure, trajets[i].heureDep.minute);
+                                                        printf("\nHeure d'arrivee : %s:%s", trajets[i].heureArr.heure, trajets[i].heureArr.minute);
+                                                        printf("\nDuree : %sh%smin", trajets[i].Duree.heure, trajets[i].Duree.minute);
+                                                        printf("\nDate : %s/%s/%s\n", trajets[i].dateTrajet.jour, trajets[i].dateTrajet.mois, trajets[i].dateTrajet.annee);
+                                                    }
                                                 }
-                                                fclose(nfile);
-                                                rename("fichierNouveauTitres.txt", "fichierDesTitresPermission.txt");
-                                                (trajets[L1[0]].placesReservees)+=1;
-                                                remove("fichierDesTrajets.txt");
-                                                nfile = fopen("fichierNouveauTrajets.txt","a");
-                                                for (int i=0; i<nbTrajets; i++){
-                                                    if (strcmp(trajets[i].idTrajet,trajets[L1[0]].idTrajet)!=0)
-                                                        fwrite(&trajets[i], sizeof(trajets[i]), 1, nfile);
+                                                switch(im)
+                                                {
+                                                case 0:
+                                                    printf("\nLes trains de la date de retour sont tous pleins.");
+                                                    do
+                                                    {
+                                                        int ch22;
+                                                        printf("\nVoulez-vous completer l'achat du billet d'aller?");
+                                                        printf("\n1-Oui         |       taper<1>");
+                                                        printf("\n2-Non         |       taper<2>");
+                                                        printf("\n====> "); scanf("%d", &ch22);
+                                                        switch(ch22)
+                                                        {
+                                                        case 1:
+                                                            ;
+                                                            char buf[15];
+                                                            strcpy(buf,titres[b1].villeDep);
+                                                            strcpy(titres[b1].villeDep,titres[b1].villeArr);
+                                                            strcpy(titres[b1].villeArr,buf);
+                                                            (titres[b1].nbrUtilisation)+=1;
+                                                            remove("fichierDesTitresPermission.txt");
+                                                            nfile = fopen("fichierNouveauTitres.txt","a");
+                                                            for (int i=0; i<nbTitres; i++){
+                                                                if (titres[i].idTitre!=titres[b1].idTitre)
+                                                                    fwrite(&titres[i], sizeof(titres[i]), 1, nfile);
 
-                                                    else
-                                                        fwrite(&trajets[L1[0]], sizeof(trajets[L1[0]]), 1, nfile);
+                                                                else
+                                                                    fwrite(&titres[b1], sizeof(titres[b1]), 1, nfile);
+                                                            }
+                                                            fclose(nfile);
+                                                            rename("fichierNouveauTitres.txt", "fichierDesTitresPermission.txt");
+                                                            (trajets[L1[0]].placesReservees)+=1;
+                                                            remove("fichierDesTrajets.txt");
+                                                            nfile = fopen("fichierNouveauTrajets.txt","a");
+                                                            for (int i=0; i<nbTrajets; i++){
+                                                                if (strcmp(trajets[i].idTrajet,trajets[L1[0]].idTrajet)!=0)
+                                                                    fwrite(&trajets[i], sizeof(trajets[i]), 1, nfile);
+
+                                                                else
+                                                                    fwrite(&trajets[L1[0]], sizeof(trajets[L1[0]]), 1, nfile);
+                                                            }
+                                                            fclose(nfile);
+                                                            rename("fichierNouveauTrajets.txt", "fichierDesTrajets.txt");
+                                                            file2 = fopen("fichierTickets.txt", "a");
+                                                            fwrite(&ticket, sizeof(ticket), 1, file2);
+                                                            fclose(file2);
+                                                            printf("\nLa reservation est bien faite. Merci.\n");
+                                                            return 0;
+                                                        break;
+                                                        case 2:
+                                                            printf("\nRetour vers le menu principal.\n");
+                                                            return 0;
+                                                        break;
+                                                        default:
+                                                            printf("choix invalide, veuillez reessayer!\n");
+                                                            allerRetour();
+                                                        break;
+                                                        }
+                                                    }while(ch22!=2);
+                                                break;
+                                                case 1:
+                                                    int ch24;
+                                                    do
+                                                    {
+                                                        printf("\nvoulez-vous l'ajouter au panier?");
+                                                        printf("\nOui           |        taper<1>");
+                                                        printf("\nNon           |        taper<2>");
+                                                        printf("\n=====> ");
+                                                        scanf("%d", &ch24);
+                                                        switch(ch24)
+                                                        {
+                                                        case 1:
+                                                            printf("\n\tBillet d'aller:                                      \tBiller de retour:");
+                                                            printf("\nVille de depart : %s                                  Ville de depart : %s", trajets[L1[0]].villeDep, trajets[L2[0]].villeDep);
+                                                            printf("\nVille d'arrivee : %s                                  Ville d'arrivee : %s", trajets[L1[0]].villeArr, trajets[L2[0]].villeArr);
+                                                            printf("\nPrix : %f DH                                          Prix : %f DH", trajets[L1[0]].Prix, (trajets[L2[0]].Prix)*0.3);
+                                                            printf("\nTrain : %s                                            Train : %s", trajets[L1[0]].trajetTrain.nomTrain, trajets[L2[0]].trajetTrain.nomTrain);
+                                                            printf("\nHeure de depart : %s:%s                               Heure de depart : %s:%s", trajets[L1[0]].heureDep.heure, trajets[L1[0]].heureDep.minute, trajets[L2[0]].heureDep.heure, trajets[L2[0]].heureDep.minute);
+                                                            printf("\nHeure d'arrivee : %s:%s                               Heure d'arrivee : %s:%s", trajets[L1[0]].heureArr.heure, trajets[L1[0]].heureArr.minute, trajets[L2[0]].heureArr.heure, trajets[L2[0]].heureArr.minute);
+                                                            printf("\nDuree : %sh%smin                                      Duree : %sh%smin", trajets[L1[0]].Duree.heure, trajets[L1[0]].Duree.minute, trajets[L2[0]].Duree.heure, trajets[L2[0]].Duree.minute);
+                                                            printf("\nDate : %s/%s/%s                                       Date : %s/%s/%s\n", trajets[L1[0]].dateTrajet.jour, trajets[L1[0]].dateTrajet.mois, trajets[L1[0]].dateTrajet.annee, trajets[L2[0]].dateTrajet.jour, trajets[L2[0]].dateTrajet.mois, trajets[L2[0]].dateTrajet.annee);
+                                                            printf("\n                         Montant total: %f DH", (trajets[L1[0]].Prix)+(trajets[L2[0]].Prix));
+                                                            int ch25;
+                                                            do
+                                                            {
+                                                                printf("\nVoulez-vous completer l'achat des deux billets?");
+                                                                printf("\n1-Oui         |       taper<1>");
+                                                                printf("\n2-Non         |       taper<2>");
+                                                                printf("\n====> "); scanf("%d", &ch25);
+                                                                switch(ch25)
+                                                                {
+                                                                case 1:
+                                                                    strcpy(NVticket.nom,ticket.nom);
+                                                                    strcpy(NVticket.prenom,ticket.prenom);
+                                                                    strcpy(NVticket.stationDep,ticket.stationArr);
+                                                                    strcpy(NVticket.stationArr,ticket.stationDep);
+                                                                    strcpy(NVticket.dateDep.jour,dateRetJour);
+                                                                    strcpy(NVticket.dateDep.mois,dateRetMois);
+                                                                    strcpy(NVticket.dateDep.annee,dateRetAnnee);
+
+                                                                    (titres[b1].nbrUtilisation)+=2;
+                                                                    remove("fichierDesTitresPermission.txt");
+                                                                    nfile = fopen("fichierNouveauTitres.txt","a");
+                                                                    for (int i=0; i<nbTitres; i++){
+                                                                        if (titres[i].idTitre!=titres[b1].idTitre)
+                                                                            fwrite(&titres[i], sizeof(titres[i]), 1, nfile);
+
+                                                                        else
+                                                                            fwrite(&titres[b1], sizeof(titres[b1]), 1, nfile);
+                                                                    }
+                                                                    fclose(nfile);
+                                                                    rename("fichierNouveauTitres.txt", "fichierDesTitresPermission.txt");
+                                                                    (trajets[L1[0]].placesReservees)+=1;
+                                                                    (trajets[L2[0]].placesReservees)+=1;
+                                                                    remove("fichierDesTrajets.txt");
+                                                                    nfile = fopen("fichierNouveauTrajets.txt","a");
+                                                                    for (int i=0; i<nbTrajets; i++){
+                                                                        if (strcmp(trajets[i].idTrajet,trajets[L1[0]].idTrajet)==0)
+                                                                            fwrite(&trajets[L1[0]], sizeof(trajets[L1[0]]), 1, nfile);
+                                                                        else
+                                                                        {
+                                                                            if(strcmp(trajets[i].idTrajet,trajets[L2[0]].idTrajet)==0)
+                                                                                fwrite(&trajets[L2[0]], sizeof(trajets[L2[0]]), 1, nfile);
+                                                                            else
+                                                                                fwrite(&trajets[i], sizeof(trajets[i]), 1, nfile);
+                                                                        }
+                                                                    }
+                                                                    fclose(nfile);
+                                                                    rename("fichierNouveauTrajets.txt", "fichierDesTrajets.txt");
+                                                                    file2 = fopen("fichierTickets.txt", "a");
+                                                                    fwrite(&ticket, sizeof(ticket), 1, file2);
+                                                                    fwrite(&NVticket, sizeof(NVticket), 1, file2);
+                                                                    fclose(file2);
+                                                                    printf("\nLa reservation est bien faite. Merci.\n");
+                                                                    return 0;
+                                                                break;
+                                                                case 2:
+                                                                    printf("\nRetour vers le menu principal.\n");
+                                                                    return 0;
+                                                                break;
+                                                                default:
+                                                                    printf("choix invalide, veuillez reessayer!\n");
+                                                                    allerRetour();
+                                                                break;
+                                                                }
+                                                            }while(ch25!=2);
+                                                        break;
+                                                        case 2:
+                                                            ;
+                                                            int ch22;
+                                                            printf("\nVoulez-vous completer l'achat du billet d'aller?");
+                                                            printf("\n1-Oui         |       taper<1>");
+                                                            printf("\n2-Non         |       taper<2>");
+                                                            printf("\n====> "); scanf("%d", &ch22);
+                                                            switch(ch22)
+                                                            {
+                                                            case 1:
+                                                                ;
+                                                                char buf[15];
+                                                                strcpy(buf,titres[b1].villeDep);
+                                                                strcpy(titres[b1].villeDep,titres[b1].villeArr);
+                                                                strcpy(titres[b1].villeArr,buf);
+                                                                (titres[b1].nbrUtilisation)+=1;
+                                                                remove("fichierDesTitresPermission.txt");
+                                                                nfile = fopen("fichierNouveauTitres.txt","a");
+                                                                for (int i=0; i<nbTitres; i++){
+                                                                    if (titres[i].idTitre!=titres[b1].idTitre)
+                                                                        fwrite(&titres[i], sizeof(titres[i]), 1, nfile);
+
+                                                                    else
+                                                                        fwrite(&titres[b1], sizeof(titres[b1]), 1, nfile);
+                                                                }
+                                                                fclose(nfile);
+                                                                rename("fichierNouveauTitres.txt", "fichierDesTitresPermission.txt");
+                                                                (trajets[L1[0]].placesReservees)+=1;
+                                                                remove("fichierDesTrajets.txt");
+                                                                nfile = fopen("fichierNouveauTrajets.txt","a");
+                                                                for (int i=0; i<nbTrajets; i++){
+                                                                    if (strcmp(trajets[i].idTrajet,trajets[L1[0]].idTrajet)!=0)
+                                                                        fwrite(&trajets[i], sizeof(trajets[i]), 1, nfile);
+
+                                                                    else
+                                                                        fwrite(&trajets[L1[0]], sizeof(trajets[L1[0]]), 1, nfile);
+                                                                }
+                                                                fclose(nfile);
+                                                                rename("fichierNouveauTrajets.txt", "fichierDesTrajets.txt");
+                                                                file2 = fopen("fichierTickets.txt", "a");
+                                                                fwrite(&ticket, sizeof(ticket), 1, file2);
+                                                                fclose(file2);
+                                                                printf("\nLa reservation est bien faite. Merci.\n");
+                                                                return 0;
+                                                            break;
+                                                            case 2:
+                                                                printf("\nRetour vers le menu principal.\n");
+                                                                return 0;
+                                                            break;
+                                                            default:
+                                                                printf("choix invalide, veuillez reessayer!\n");
+                                                                allerRetour();
+                                                            break;
+                                                            }
+                                                        break;
+                                                        default:
+                                                            printf("choix invalide, veuillez reessayer!\n");
+                                                            allerRetour();
+                                                        break;
+                                                        }
+                                                    }while(ch24!=2);
+                                                break;
+                                                default:
+                                                    ;
+                                                    int ch23;
+                                                    do
+                                                    {
+                                                        printf("\nvoulez-vous reserver?");
+                                                        printf("\nOui           |        taper<1>");
+                                                        printf("\nNon           |        taper<2>");
+                                                        printf("\n=====> ");
+                                                        scanf("%d", &ch23);
+                                                        switch(ch23)
+                                                        {
+                                                        case 1:
+                                                            int imc;
+                                                            printf("\nEntrer votre choix :"); scanf("%d", &imc);
+                                                            while(imc>im){
+                                                                printf("\nEntrer votre choix: "); scanf("%d", &imc);
+                                                            }
+                                                            printf("\nVoici le billet de ce voyage:\n");
+                                                            printf("\nVille de depart : %s", trajets[L2[imc-1]].villeDep);
+                                                            printf("\nVille d'arrivee : %s", trajets[L2[imc-1].villeArr);
+                                                            printf("\nPrix : %f DH", (trajets[L2[imc-1].Prix)*0.3);
+                                                            printf("\nTrain : %s", trajets[L2[imc-1].trajetTrain.nomTrain);
+                                                            printf("\nHeure de depart : %s:%s", trajets[L2[imc-1].heureDep.heure, trajets[L2[imc-1].heureDep.minute);
+                                                            printf("\nHeure d'arrivee : %s:%s", trajets[L2[imc-1].heureArr.heure, trajets[L2[imc-1].heureArr.minute);
+                                                            printf("\nDuree : %sh%smin", trajets[L2[imc-1].Duree.heure, trajets[L2[imc-1].Duree.minute);
+                                                            printf("\nDate : %s/%s/%s", trajets[L2[imc-1].dateTrajet.jour, trajets[L2[imc-1].dateTrajet.mois, trajets[L2[imc-1].dateTrajet.annee);
+                                                            printf("\n");
+
+                                                            //________________________________________
+
+                                                        break;
+                                                        case 2:
+                                                        break;
+                                                        default:
+                                                        break;
+                                                        }
+                                                    }while(ch23!=2);
+                                                break;
                                                 }
-                                                fclose(nfile);
-                                                rename("fichierNouveauTrajets.txt", "fichierDesTrajets.txt");
-                                                file2 = fopen("fichierTickets.txt", "a");
-                                                fwrite(&ticket, sizeof(ticket), 1, file2);
-                                                fclose(file2);
-                                                printf("\nLa reservation est bien faite. Merci.\n");
-                                                return 0;
                                             break;
                                             case 2:
-                                                printf("\nRetour vers le menu principal.\n");
-                                                return 0;
                                             break;
                                             default:
-                                                printf("choix invalide, veuillez reessayer!\n");
-                                                allerSimple();
                                             break;
                                             }
                                         }while(ch17!=2);
@@ -668,276 +1340,407 @@ int allerSimple()
                                         printf("\nCe titre de permission est deja utilise!");
                                 }
                                 else
-                                    printf("\nVous ne pouvez pas utiliser ce titre de permission pour acheter ce billet.");
+                                printf("\nVous ne pouvez pas utiliser ce titre de permission pour acheter ce billet.");
                             }
                             else
                                 printf("\nLe titre de permission ayant cet identifiant n'existe pas.");
-                        return 0;
-                        break;
-                        case 2:
-                            (trajets[L1[0]].placesReservees)+=1;
-                            remove("fichierDesTrajets.txt");
-                            nfile = fopen("fichierNouveauTrajets.txt","a");
-                            for (int i=0; i<nbTrajets; i++){
-                                if (strcmp(trajets[i].idTrajet,trajets[L1[0]].idTrajet)!=0)
-                                    fwrite(&trajets[i], sizeof(trajets[i]), 1, nfile);
-
-                                else
-                                    fwrite(&trajets[L1[0]], sizeof(trajets[L1[0]]), 1, nfile);
-                            }
-                            fclose(nfile);
-                            rename("fichierNouveauTrajets.txt", "fichierDesTrajets.txt");
-                            file2 = fopen("fichierTickets.txt", "a");
-                            fwrite(&ticket, sizeof(ticket), 1, file2);
-                            fclose(file2);
-                            printf("\nVoici le billet de votre voyage:\n");
-                            printf("\nVille de depart : %s", trajets[L1[0]].villeDep);
-                            printf("\nVille d'arrivee : %s", trajets[L1[0]].villeArr);
-                            printf("\nPrix : %f DH", trajets[L1[0]].Prix);
-                            printf("\nTrain : %s", trajets[L1[0]].trajetTrain.nomTrain);
-                            printf("\nHeure de depart : %s:%s", trajets[L1[0]].heureDep.heure, trajets[L1[0]].heureDep.minute);
-                            printf("\nHeure d'arrivee : %s:%s", trajets[L1[0]].heureArr.heure, trajets[L1[0]].heureArr.minute);
-                            printf("\nDuree : %sh%smin", trajets[L1[0]].Duree.heure, trajets[L1[0]].Duree.minute);
-                            printf("\nDate : %s/%s/%s", trajets[L1[0]].dateTrajet.jour, trajets[L1[0]].dateTrajet.mois, trajets[L1[0]].dateTrajet.annee);
-                            printf("\n");
-                            printf("\nLa reservation est bien faite. Merci.\n");
-                        return 0;
                         break;
                         default:
-                            printf("choix invalide, veuillez réessayer!\n");
-                            allerSimple();
                         break;
+                        }
+                        }while(ch14!=2);
                     }
-                    }while(ch15!=2);
-                break;
-                default:
-                    printf("choix invalide, veuillez réessayer!\n");
-                    allerSimple();
-                break;
                 }
-                }while(ch14!=2);
-            break;
-            default:
-                ;
-                int ch18;
+                else
+                printf("\nPas de trains disponibles pour la date de retour");
+                int ch20;
                 do
                 {
-                printf("\nVoulez-vous reserver?");
-                printf("\nOui           |        taper<1>");
-                printf("\nNon           |        taper<2>");
-                printf("\n====> ");
-                scanf("%d", &ch18);
-                switch(ch18){
-                case 2:
-                    printf("\nRetour vers le menu principal.\n");
-                    return 0;
-                break;
-                case 1:
-                    ;
-                    int ch19, inc;
-                    do
-                    {
-                    printf("\nEntrer votre choix: "); scanf("%d", &inc);
-                    while(inc>in){
-                        printf("\nEntrer votre choix: "); scanf("%d", &inc);
-                    }
-                    printf("\nVous etes un EIOR?");
+                    printf("\nvoulez-vous reserver juste pour la date de depart?");
                     printf("\nOui           |        taper<1>");
                     printf("\nNon           |        taper<2>");
-                    printf("\n=====> "); scanf("%d", &ch19);
-                    switch(ch19){
-                        case 1:
-                            ;
-                            int idTitre1, b1;
-                            printf("\nEntrer l'identifiant de votre titre de permission: "); scanf("%d", &idTitre1);
-                            int nbTitres = 0;
-                            fileT = fopen("fichierDesTitresPermission.txt", "r");
-                            while (fread(&titre, sizeof(titre), 1, fileT)){
-                                titres[nbTitres] = titre;
-                                nbTitres++;
-                            }
-                            fclose(fileT);
-                            if (rechercheTitre(idTitre1, titres, nbTitres))
-                            {
-                                for(int i=0; i<nbTitres; i++)
-                                {
-                                    if(titres[i].idTitre==idTitre1)
-                                        b1=i;
-                                }
-                                if(strcmp(trajets[L1[inc-1]].villeDep,titres[b1].villeDep)==0 && strcmp(trajets[L1[inc-1]].villeArr,titres[b1].villeArr)==0)
-                                {
-                                    if(titres[b1].nbrUtilisation<2)
-                                    {
-                                        printf("\nVoici le billet de ce voyage:\n");
-                                        printf("\nVille de depart : %s", trajets[L1[inc-1]].villeDep);
-                                        printf("\nVille d'arrivee : %s", trajets[L1[inc-1]].villeArr);
-                                        printf("\nPrix : %f DH", (trajets[L1[inc-1]].Prix)*0.3);
-                                        printf("\nTrain : %s", trajets[L1[inc-1]].trajetTrain.nomTrain);
-                                        printf("\nHeure de depart : %s:%s", trajets[L1[inc-1]].heureDep.heure, trajets[L1[inc-1]].heureDep.minute);
-                                        printf("\nHeure d'arrivee : %s:%s", trajets[L1[inc-1]].heureArr.heure, trajets[L1[inc-1]].heureArr.minute);
-                                        printf("\nDuree : %sh%smin", trajets[L1[inc-1]].Duree.heure, trajets[L1[inc-1]].Duree.minute);
-                                        printf("\nDate : %s/%s/%s", trajets[L1[inc-1]].dateTrajet.jour, trajets[L1[inc-1]].dateTrajet.mois, trajets[L1[inc-1]].dateTrajet.annee);
-                                        printf("\n");
-                                        int ch17;
-                                        do
-                                        {
-                                            printf("\nvoulez-vous reserver?");
-                                            printf("\nOui           |        taper<1>");
-                                            printf("\nNon           |        taper<2>");
-                                            printf("\n=====> ");
-                                            scanf("%d", &ch17);
-                                            switch(ch17){
-                                            case 1:
-                                                ;
-                                                char buf[15];
-                                                strcpy(buf,titres[b1].villeDep);
-                                                strcpy(titres[b1].villeDep,titres[b1].villeArr);
-                                                strcpy(titres[b1].villeArr,buf);
-                                                (titres[b1].nbrUtilisation)+=1;
-                                                remove("fichierDesTitresPermission.txt");
-                                                nfile = fopen("fichierNouveauTitres.txt","a");
-                                                for (int i=0; i<nbTitres; i++){
-                                                    if (titres[i].idTitre!=titres[b1].idTitre)
-                                                        fwrite(&titres[i], sizeof(titres[i]), 1, nfile);
-
-                                                    else
-                                                        fwrite(&titres[b1], sizeof(titres[b1]), 1, nfile);
-                                                }
-                                                fclose(nfile);
-                                                rename("fichierNouveauTitres.txt", "fichierDesTitresPermission.txt");
-                                                (trajets[L1[inc-1]].placesReservees)+=1;
-                                                remove("fichierDesTrajets.txt");
-                                                nfile = fopen("fichierNouveauTrajets.txt","a");
-                                                for (int i=0; i<nbTrajets; i++){
-                                                    if (strcmp(trajets[i].idTrajet,trajets[L1[0]].idTrajet)!=0)
-                                                        fwrite(&trajets[i], sizeof(trajets[i]), 1, nfile);
-                                                    else
-                                                        fwrite(&trajets[L1[inc-1]], sizeof(trajets[L1[inc-1]]), 1, nfile);
-                                                }
-                                                fclose(nfile);
-                                                rename("fichierNouveauTrajets.txt", "fichierDesTrajets.txt");
-                                                file2 = fopen("fichierTickets.txt", "a");
-                                                fwrite(&ticket, sizeof(ticket), 1, file2);
-                                                fclose(file2);
-                                                printf("\nLa reservation est bien faite. Merci.\n");
-                                                return 0;
-                                            break;
-                                            case 2:
-                                                printf("\nRetour vers le menu principal.\n");
-                                                return 0;
-                                            break;
-                                            default:
-                                                printf("choix invalide, veuillez reessayer!\n");
-                                                allerSimple();
-                                            break;
-                                            }
-                                        }while(ch17!=2);
-                                    }
-                                    else
-                                        printf("\nCe titre de permission est deja utilise!");
-                                }
-                                else
-                                    printf("\nVous ne pouvez pas utiliser ce titre de permission pour acheter ce billet.");
-                            }
-                            else
-                                printf("\nLe titre de permission ayant cet identifiant n'existe pas.");
+                    printf("\n=====> ");
+                    scanf("%d", &ch20);
+                    switch(ch20){
+                    case 1:
+                        allerSimpleVerifi(nbTrajets, trajets, buff, ticket);
+                    return 0;
+                    break;
+                    case 2:
+                        printf("\nRetour vers le menu principal.\n");
                         return 0;
-                        break;
-                        case 2:                                                                                     // +
-                            (trajets[L1[inc-1]].placesReservees)+=1;
-                            remove("fichierDesTrajets.txt");
-                            nfile = fopen("fichierNouveauTrajets.txt","a");
-                            for (int i=0; i<nbTrajets; i++){
-                                if (strcmp(trajets[i].idTrajet,trajets[L1[inc-1]].idTrajet)!=0)
-                                    fwrite(&trajets[i], sizeof(trajets[i]), 1, nfile);
-
-                                else
-                                    fwrite(&trajets[L1[inc-1]], sizeof(trajets[L1[inc-1]]), 1, nfile);
-                            }
-                            fclose(nfile);
-                            rename("fichierNouveauTrajets.txt", "fichierDesTrajets.txt");
-                            file2 = fopen("fichierTickets.txt", "a");
-                            fwrite(&ticket, sizeof(ticket), 1, file2);
-                            fclose(file2);
-                            printf("\nVoici le billet de votre voyage:\n");
-                            printf("\nVille de depart : %s", trajets[L1[inc-1]].villeDep);
-                            printf("\nVille d'arrivee : %s", trajets[L1[inc-1]].villeArr);
-                            printf("\nPrix : %f DH", trajets[L1[inc-1]].Prix);
-                            printf("\nTrain : %s", trajets[L1[inc-1]].trajetTrain.nomTrain);
-                            printf("\nHeure de depart : %s:%s", trajets[L1[inc-1]].heureDep.heure, trajets[L1[inc-1]].heureDep.minute);
-                            printf("\nHeure d'arrivee : %s:%s", trajets[L1[inc-1]].heureArr.heure, trajets[L1[inc-1]].heureArr.minute);
-                            printf("\nDuree : %sh%smin", trajets[L1[inc-1]].Duree.heure, trajets[L1[inc-1]].Duree.minute);
-                            printf("\nDate : %s/%s/%s", trajets[L1[inc-1]].dateTrajet.jour, trajets[L1[inc-1]].dateTrajet.mois, trajets[L1[inc-1]].dateTrajet.annee);
-                            printf("\n");
-                            printf("\nLa reservation est bien faite. Merci.\n");
-                        return 0;
-                        break;
-                        default:
-                            printf("choix invalide, veuillez réessayer!\n");
-                            allerSimple();
-                        break;
+                    break;
+                    default:
+                        printf("choix invalide, veuillez reessayer!\n");
+                        allerRetour();
+                    break;
                     }
-                    }while(ch19!=2);
-                break;
-                default:
-                    printf("choix invalide, veuillez réessayer!\n");
-                    allerSimple();
-                break;
-                }
-                }while(ch18!=2);
-            break;
+                }while(ch20!=2);
+            }
+            else
+                printf("\nPas de trains disponibles.");
+        break;
+        case 2:
+        break;
+        default:
+        break;
         }
-    }
-    else
-        printf("\nPas de trains disponibles.");
+    }while(ch21!=2);
 }
+    //***************************************************************************
 
-int allerRetour()
-{
-    char buffer[6], buff[15], buff1[15];
-    printf("\nVeillez remplir les champs suivants:");
-    printf("\nNom: "); scanf("%s", &ticket.nom);
-    printf("\nPrenom: "); scanf("%s", &ticket.prenom);
-    printf("\nVille de depart: "); scanf("%s", &ticket.stationDep);
-    printf("\nVille d'arrivee: "); scanf("%s", &ticket.stationArr);
-    printf("\nDate de depart: ");
-    printf("\nJour (en 2 chiffres): "); scanf("%s", &ticket.dateDep.jour);
-    printf("\nMois (en 2 chiffres): "); scanf("%s", &ticket.dateDep.mois);
-    printf("\nAnnee (en 4 chiffres): "); scanf("%s", &ticket.dateDep.annee);
-    printf("\n");
-    printf("\nDate de retour: ");
-    printf("\nJour (en 2 chiffres): "); scanf("%s", &ticket.dateRet.jour);
-    printf("\nMois (en 2 chiffres): "); scanf("%s", &ticket.dateRet.mois);
-    printf("\nAnnee (en 4 chiffres): "); scanf("%s", &ticket.dateRet.annee);
-    printf("\n");
 
-    buffer[0]=toupper(ticket.stationDep[0]);
-    buffer[1]=toupper(ticket.stationDep[1]);
-    buffer[2]=toupper(ticket.stationArr[0]);
-    buffer[3]=toupper(ticket.stationArr[1]);
 
-    strcpy(buff, buffer);
-    strcat(buff,ticket.dateDep.jour);
-    strcat(buff,ticket.dateDep.mois);
-    strcat(buff,ticket.dateDep.annee);
-    
-    strcpy(buff1, buffer);
-    strcat(buff1,ticket.dateRet.jour);
-    strcat(buff1,ticket.dateRet.mois);
-    strcat(buff1,ticket.dateRet.annee);
-    
-    int nbTrajets = 0;
-    file = fopen("fichierDesTrajets.txt", "r");
-    while (fread(&trajet, sizeof(trajet), 1, file)){
-        trajets[nbTrajets] = trajet;
-        nbTrajets++;
-    }
-    fclose(file);
 
-    if(rechercheTrajetJour(buff, trajets, nbTrajets))
+   /* if(rechercheTrajetJour(buff, trajets, nbTrajets))
     {
         if(rechercheTrajetJour(buff1, trajets, nbTrajets))
         {
+            int ch21;
+            do
+            {
+            printf("\nVous etes un EIOR?");
+            printf("\nOui           |        taper<1>");
+            printf("\nNon           |        taper<2>");
+            printf("\n====> ");
+            scanf("%d", &ch21);
+            switch(ch21){
+                case 1:
+                    ;
+                    int idTitre1, b1;
+                    printf("\nEntrer l'identifiant de votre titre de permission: "); scanf("%d", &idTitre1);
+                    int nbTitres = 0;
+                    fileT = fopen("fichierDesTitresPermission.txt", "r");
+                    while (fread(&titre, sizeof(titre), 1, fileT)){
+                        titres[nbTitres] = titre;
+                        nbTitres++;
+                    }
+                    fclose(fileT);
+                    if (rechercheTitre(idTitre1, titres, nbTitres))
+                    {
+                        for(int i=0; i<nbTitres; i++)
+                        {
+                            if(titres[i].idTitre==idTitre1)
+                                b1=i;
+                        }
+                        if(strcmp(trajets[L1[0]].villeDep,titres[b1].villeDep)==0 && strcmp(trajets[L1[0]].villeArr,titres[b1].villeArr)==0)
+                        {
+                            if(titres[b1].nbrUtilisation==0)
+                            {
+
+                                switch(in){
+                                    case 0:
+                                        printf("\nLes trains sont tous pleins.");
+                                    break;
+                                    case 1:
+                                        ;
+                                        int ch14;
+                                        do
+                                        {
+                                        printf("\nVoulez-vous reserver?");
+                                        printf("\nOui           |        taper<1>");
+                                        printf("\nNon           |        taper<2>");
+                                        printf("\n=====> ");
+                                        scanf("%d", &ch14);
+                                        switch(ch14){
+                                        case 2:
+                                            printf("\nRetour vers le menu principal.\n");
+                                            return 0;
+                                        break;
+                                        case 1:
+                                            ;
+
+                                        break;
+                                        default:
+                                            printf("choix invalide, veuillez réessayer!\n");
+                                            allerSimple();
+                                        break;
+                                        }
+                                        }while(ch14!=2);
+                                    break;
+                                    default:
+                                        ;
+                                        int ch18;
+                                        do
+                                        {
+                                        printf("\nVoulez-vous reserver?");
+                                        printf("\nOui           |        taper<1>");
+                                        printf("\nNon           |        taper<2>");
+                                        printf("\n====> ");
+                                        scanf("%d", &ch18);
+                                        switch(ch18){
+                                        case 2:
+                                            printf("\nRetour vers le menu principal.\n");
+                                            return 0;
+                                        break;
+                                        case 1:
+                                            ;
+                                            int ch19, inc;
+                                            do
+                                            {
+                                            printf("\nEntrer votre choix: "); scanf("%d", &inc);
+                                            while(inc>in){
+                                                printf("\nEntrer votre choix: "); scanf("%d", &inc);
+                                            }
+                                            printf("\nVous etes un EIOR?");
+                                            printf("\nOui           |        taper<1>");
+                                            printf("\nNon           |        taper<2>");
+                                            printf("\n=====> "); scanf("%d", &ch19);
+                                            switch(ch19){
+                                                case 1:
+                                                    ;
+                                                    int idTitre1, b1;
+                                                    printf("\nEntrer l'identifiant de votre titre de permission: "); scanf("%d", &idTitre1);
+                                                    int nbTitres = 0;
+                                                    fileT = fopen("fichierDesTitresPermission.txt", "r");
+                                                    while (fread(&titre, sizeof(titre), 1, fileT)){
+                                                        titres[nbTitres] = titre;
+                                                        nbTitres++;
+                                                    }
+                                                    fclose(fileT);
+                                                    if (rechercheTitre(idTitre1, titres, nbTitres))
+                                                    {
+                                                        for(int i=0; i<nbTitres; i++)
+                                                        {
+                                                            if(titres[i].idTitre==idTitre1)
+                                                                b1=i;
+                                                        }
+                                                        if(strcmp(trajets[L1[inc-1]].villeDep,titres[b1].villeDep)==0 && strcmp(trajets[L1[inc-1]].villeArr,titres[b1].villeArr)==0)
+                                                        {
+                                                            if(titres[b1].nbrUtilisation<2)
+                                                            {
+                                                                printf("\nVoici le billet de ce voyage:\n");
+                                                                printf("\nVille de depart : %s", trajets[L1[inc-1]].villeDep);
+                                                                printf("\nVille d'arrivee : %s", trajets[L1[inc-1]].villeArr);
+                                                                printf("\nPrix : %f DH", (trajets[L1[inc-1]].Prix)*0.3);
+                                                                printf("\nTrain : %s", trajets[L1[inc-1]].trajetTrain.nomTrain);
+                                                                printf("\nHeure de depart : %s:%s", trajets[L1[inc-1]].heureDep.heure, trajets[L1[inc-1]].heureDep.minute);
+                                                                printf("\nHeure d'arrivee : %s:%s", trajets[L1[inc-1]].heureArr.heure, trajets[L1[inc-1]].heureArr.minute);
+                                                                printf("\nDuree : %sh%smin", trajets[L1[inc-1]].Duree.heure, trajets[L1[inc-1]].Duree.minute);
+                                                                printf("\nDate : %s/%s/%s", trajets[L1[inc-1]].dateTrajet.jour, trajets[L1[inc-1]].dateTrajet.mois, trajets[L1[inc-1]].dateTrajet.annee);
+                                                                printf("\n");
+                                                                int ch17;
+                                                                do
+                                                                {
+                                                                    printf("\nvoulez-vous reserver?");
+                                                                    printf("\nOui           |        taper<1>");
+                                                                    printf("\nNon           |        taper<2>");
+                                                                    printf("\n=====> ");
+                                                                    scanf("%d", &ch17);
+                                                                    switch(ch17){
+                                                                    case 1:
+                                                                        ;
+                                                                        char buf[15];
+                                                                        strcpy(buf,titres[b1].villeDep);
+                                                                        strcpy(titres[b1].villeDep,titres[b1].villeArr);
+                                                                        strcpy(titres[b1].villeArr,buf);
+                                                                        (titres[b1].nbrUtilisation)+=1;
+                                                                        remove("fichierDesTitresPermission.txt");
+                                                                        nfile = fopen("fichierNouveauTitres.txt","a");
+                                                                        for (int i=0; i<nbTitres; i++){
+                                                                            if (titres[i].idTitre!=titres[b1].idTitre)
+                                                                                fwrite(&titres[i], sizeof(titres[i]), 1, nfile);
+
+                                                                            else
+                                                                                fwrite(&titres[b1], sizeof(titres[b1]), 1, nfile);
+                                                                        }
+                                                                        fclose(nfile);
+                                                                        rename("fichierNouveauTitres.txt", "fichierDesTitresPermission.txt");
+                                                                        (trajets[L1[inc-1]].placesReservees)+=1;
+                                                                        remove("fichierDesTrajets.txt");
+                                                                        nfile = fopen("fichierNouveauTrajets.txt","a");
+                                                                        for (int i=0; i<nbTrajets; i++){
+                                                                            if (strcmp(trajets[i].idTrajet,trajets[L1[0]].idTrajet)!=0)
+                                                                                fwrite(&trajets[i], sizeof(trajets[i]), 1, nfile);
+                                                                            else
+                                                                                fwrite(&trajets[L1[inc-1]], sizeof(trajets[L1[inc-1]]), 1, nfile);
+                                                                        }
+                                                                        fclose(nfile);
+                                                                        rename("fichierNouveauTrajets.txt", "fichierDesTrajets.txt");
+                                                                        file2 = fopen("fichierTickets.txt", "a");
+                                                                        fwrite(&ticket, sizeof(ticket), 1, file2);
+                                                                        fclose(file2);
+                                                                        printf("\nLa reservation est bien faite. Merci.\n");
+                                                                        return 0;
+                                                                    break;
+                                                                    case 2:
+                                                                        printf("\nRetour vers le menu principal.\n");
+                                                                        return 0;
+                                                                    break;
+                                                                    default:
+                                                                        printf("choix invalide, veuillez reessayer!\n");
+                                                                        allerSimple();
+                                                                    break;
+                                                                    }
+                                                                }while(ch17!=2);
+                                                            }
+                                                            else
+                                                                printf("\nCe titre de permission est deja utilise!");
+                                                        }
+                                                        else
+                                                            printf("\nVous ne pouvez pas utiliser ce titre de permission pour acheter ce billet.");
+                                                    }
+                                                    else
+                                                        printf("\nLe titre de permission ayant cet identifiant n'existe pas.");
+                                                return 0;
+                                                break;
+                                                case 2:                                                                                     // +
+                                                    (trajets[L1[inc-1]].placesReservees)+=1;
+                                                    remove("fichierDesTrajets.txt");
+                                                    nfile = fopen("fichierNouveauTrajets.txt","a");
+                                                    for (int i=0; i<nbTrajets; i++){
+                                                        if (strcmp(trajets[i].idTrajet,trajets[L1[inc-1]].idTrajet)!=0)
+                                                            fwrite(&trajets[i], sizeof(trajets[i]), 1, nfile);
+
+                                                        else
+                                                            fwrite(&trajets[L1[inc-1]], sizeof(trajets[L1[inc-1]]), 1, nfile);
+                                                    }
+                                                    fclose(nfile);
+                                                    rename("fichierNouveauTrajets.txt", "fichierDesTrajets.txt");
+                                                    file2 = fopen("fichierTickets.txt", "a");
+                                                    fwrite(&ticket, sizeof(ticket), 1, file2);
+                                                    fclose(file2);
+                                                    printf("\nVoici le billet de votre voyage:\n");
+                                                    printf("\nVille de depart : %s", trajets[L1[inc-1]].villeDep);
+                                                    printf("\nVille d'arrivee : %s", trajets[L1[inc-1]].villeArr);
+                                                    printf("\nPrix : %f DH", trajets[L1[inc-1]].Prix);
+                                                    printf("\nTrain : %s", trajets[L1[inc-1]].trajetTrain.nomTrain);
+                                                    printf("\nHeure de depart : %s:%s", trajets[L1[inc-1]].heureDep.heure, trajets[L1[inc-1]].heureDep.minute);
+                                                    printf("\nHeure d'arrivee : %s:%s", trajets[L1[inc-1]].heureArr.heure, trajets[L1[inc-1]].heureArr.minute);
+                                                    printf("\nDuree : %sh%smin", trajets[L1[inc-1]].Duree.heure, trajets[L1[inc-1]].Duree.minute);
+                                                    printf("\nDate : %s/%s/%s", trajets[L1[inc-1]].dateTrajet.jour, trajets[L1[inc-1]].dateTrajet.mois, trajets[L1[inc-1]].dateTrajet.annee);
+                                                    printf("\n");
+                                                    printf("\nLa reservation est bien faite. Merci.\n");
+                                                return 0;
+                                                break;
+                                                default:
+                                                    printf("choix invalide, veuillez réessayer!\n");
+                                                    allerSimple();
+                                                break;
+                                            }
+                                            }while(ch19!=2);
+                                        break;
+                                        default:
+                                            printf("choix invalide, veuillez réessayer!\n");
+                                            allerSimple();
+                                        break;
+                                        }
+                                        }while(ch18!=2);
+                                    break;
+                                }
+                                printf("\nVoici le billet de ce voyage:\n");
+                                printf("\nVille de depart : %s", trajets[L1[0]].villeDep);
+                                printf("\nVille d'arrivee : %s", trajets[L1[0]].villeArr);
+                                printf("\nPrix : %f DH", (trajets[L1[0]].Prix)*0.3);
+                                printf("\nTrain : %s", trajets[L1[0]].trajetTrain.nomTrain);
+                                printf("\nHeure de depart : %s:%s", trajets[L1[0]].heureDep.heure, trajets[L1[0]].heureDep.minute);
+                                printf("\nHeure d'arrivee : %s:%s", trajets[L1[0]].heureArr.heure, trajets[L1[0]].heureArr.minute);
+                                printf("\nDuree : %sh%smin", trajets[L1[0]].Duree.heure, trajets[L1[0]].Duree.minute);
+                                printf("\nDate : %s/%s/%s", trajets[L1[0]].dateTrajet.jour, trajets[L1[0]].dateTrajet.mois, trajets[L1[0]].dateTrajet.annee);
+                                printf("\n");
+                                int ch17;
+                                do
+                                {
+                                    printf("\nvoulez-vous reserver?");
+                                    printf("\nOui           |        taper<1>");
+                                    printf("\nNon           |        taper<2>");
+                                    printf("\n=====> ");
+                                    scanf("%d", &ch17);
+                                    switch(ch17){
+                                    case 1:
+                                        ;
+                                        char buf[15];
+                                        strcpy(buf,titres[b1].villeDep);
+                                        strcpy(titres[b1].villeDep,titres[b1].villeArr);
+                                        strcpy(titres[b1].villeArr,buf);
+                                        (titres[b1].nbrUtilisation)+=1;
+                                        remove("fichierDesTitresPermission.txt");
+                                        nfile = fopen("fichierNouveauTitres.txt","a");
+                                        for (int i=0; i<nbTitres; i++){
+                                            if (titres[i].idTitre!=titres[b1].idTitre)
+                                                fwrite(&titres[i], sizeof(titres[i]), 1, nfile);
+
+                                            else
+                                                fwrite(&titres[b1], sizeof(titres[b1]), 1, nfile);
+                                        }
+                                        fclose(nfile);
+                                        rename("fichierNouveauTitres.txt", "fichierDesTitresPermission.txt");
+                                        (trajets[L1[0]].placesReservees)+=1;
+                                        remove("fichierDesTrajets.txt");
+                                        nfile = fopen("fichierNouveauTrajets.txt","a");
+                                        for (int i=0; i<nbTrajets; i++){
+                                            if (strcmp(trajets[i].idTrajet,trajets[L1[0]].idTrajet)!=0)
+                                                fwrite(&trajets[i], sizeof(trajets[i]), 1, nfile);
+
+                                            else
+                                                fwrite(&trajets[L1[0]], sizeof(trajets[L1[0]]), 1, nfile);
+                                        }
+                                        fclose(nfile);
+                                        rename("fichierNouveauTrajets.txt", "fichierDesTrajets.txt");
+                                        file2 = fopen("fichierTickets.txt", "a");
+                                        fwrite(&ticket, sizeof(ticket), 1, file2);
+                                        fclose(file2);
+                                        printf("\nLa reservation est bien faite. Merci.\n");
+                                        return 0;
+                                    break;
+                                    case 2:
+                                        printf("\nRetour vers le menu principal.\n");
+                                        return 0;
+                                    break;
+                                    default:
+                                        printf("choix invalide, veuillez reessayer!\n");
+                                        allerSimple();
+                                    break;
+                                    }
+                                }while(ch17!=2);
+                            }
+                            else
+                                printf("\nCe titre de permission est deja utilise!");
+                        }
+                        else
+                            printf("\nVous ne pouvez pas utiliser ce titre de permission pour acheter ce billet.");
+                    }
+                    else
+                        printf("\nLe titre de permission ayant cet identifiant n'existe pas.");
+                return 0;
+                break;
+                case 2:
+                    (trajets[L1[0]].placesReservees)+=1;
+                    remove("fichierDesTrajets.txt");
+                    nfile = fopen("fichierNouveauTrajets.txt","a");
+                    for (int i=0; i<nbTrajets; i++){
+                        if (strcmp(trajets[i].idTrajet,trajets[L1[0]].idTrajet)!=0)
+                            fwrite(&trajets[i], sizeof(trajets[i]), 1, nfile);
+
+                        else
+                            fwrite(&trajets[L1[0]], sizeof(trajets[L1[0]]), 1, nfile);
+                    }
+                    fclose(nfile);
+                    rename("fichierNouveauTrajets.txt", "fichierDesTrajets.txt");
+                    file2 = fopen("fichierTickets.txt", "a");
+                    fwrite(&ticket, sizeof(ticket), 1, file2);
+                    fclose(file2);
+                    printf("\nVoici le billet de votre voyage:\n");
+                    printf("\nVille de depart : %s", trajets[L1[0]].villeDep);
+                    printf("\nVille d'arrivee : %s", trajets[L1[0]].villeArr);
+                    printf("\nPrix : %f DH", trajets[L1[0]].Prix);
+                    printf("\nTrain : %s", trajets[L1[0]].trajetTrain.nomTrain);
+                    printf("\nHeure de depart : %s:%s", trajets[L1[0]].heureDep.heure, trajets[L1[0]].heureDep.minute);
+                    printf("\nHeure d'arrivee : %s:%s", trajets[L1[0]].heureArr.heure, trajets[L1[0]].heureArr.minute);
+                    printf("\nDuree : %sh%smin", trajets[L1[0]].Duree.heure, trajets[L1[0]].Duree.minute);
+                    printf("\nDate : %s/%s/%s", trajets[L1[0]].dateTrajet.jour, trajets[L1[0]].dateTrajet.mois, trajets[L1[0]].dateTrajet.annee);
+                    printf("\n");
+                    printf("\nLa reservation est bien faite. Merci.\n");
+                return 0;
+                break;
+                default:
+                    printf("choix invalide, veuillez réessayer!\n");
+                    allerSimple();
+                break;
+            }
+            }while(ch21!=2);
+
+            printf("\nTrains proposes pour la date de depart: ");
             int in=0, L1[5];
             for (int i=0; i<nbTrajets; i++)
             {
@@ -976,148 +1779,7 @@ int allerRetour()
                     break;
                     case 1:
                         ;
-                        int ch15;
-                        do
-                        {
-                        printf("\nVous etes un EIOR?");
-                        printf("\nOui           |        taper<1>");
-                        printf("\nNon           |        taper<2>");
-                        printf("\n====> ");
-                        scanf("%d", &ch15);
-                        switch(ch15){
-                            case 1:
-                                ;
-                                int idTitre1, b1;
-                                printf("\nEntrer l'identifiant de votre titre de permission: "); scanf("%d", &idTitre1);
-                                int nbTitres = 0;
-                                fileT = fopen("fichierDesTitresPermission.txt", "r");
-                                while (fread(&titre, sizeof(titre), 1, fileT)){
-                                    titres[nbTitres] = titre;
-                                    nbTitres++;
-                                }
-                                fclose(fileT);
-                                if (rechercheTitre(idTitre1, titres, nbTitres))
-                                {
-                                    for(int i=0; i<nbTitres; i++)
-                                    {
-                                        if(titres[i].idTitre==idTitre1)
-                                            b1=i;
-                                    }
-                                    if(strcmp(trajets[L1[0]].villeDep,titres[b1].villeDep)==0 && strcmp(trajets[L1[0]].villeArr,titres[b1].villeArr)==0)
-                                    {
-                                        if(titres[b1].nbrUtilisation<2)
-                                        {
-                                            printf("\nVoici le billet de ce voyage:\n");
-                                            printf("\nVille de depart : %s", trajets[L1[0]].villeDep);
-                                            printf("\nVille d'arrivee : %s", trajets[L1[0]].villeArr);
-                                            printf("\nPrix : %f DH", (trajets[L1[0]].Prix)*0.3);
-                                            printf("\nTrain : %s", trajets[L1[0]].trajetTrain.nomTrain);
-                                            printf("\nHeure de depart : %s:%s", trajets[L1[0]].heureDep.heure, trajets[L1[0]].heureDep.minute);
-                                            printf("\nHeure d'arrivee : %s:%s", trajets[L1[0]].heureArr.heure, trajets[L1[0]].heureArr.minute);
-                                            printf("\nDuree : %sh%smin", trajets[L1[0]].Duree.heure, trajets[L1[0]].Duree.minute);
-                                            printf("\nDate : %s/%s/%s", trajets[L1[0]].dateTrajet.jour, trajets[L1[0]].dateTrajet.mois, trajets[L1[0]].dateTrajet.annee);
-                                            printf("\n");
-                                            int ch17;
-                                            do
-                                            {
-                                                printf("\nvoulez-vous reserver?");
-                                                printf("\nOui           |        taper<1>");
-                                                printf("\nNon           |        taper<2>");
-                                                printf("\n=====> ");
-                                                scanf("%d", &ch17);
-                                                switch(ch17){
-                                                case 1:
-                                                    ;
-                                                    char buf[15];
-                                                    strcpy(buf,titres[b1].villeDep);
-                                                    strcpy(titres[b1].villeDep,titres[b1].villeArr);
-                                                    strcpy(titres[b1].villeArr,buf);
-                                                    (titres[b1].nbrUtilisation)+=1;
-                                                    remove("fichierDesTitresPermission.txt");
-                                                    nfile = fopen("fichierNouveauTitres.txt","a");
-                                                    for (int i=0; i<nbTitres; i++){
-                                                        if (titres[i].idTitre!=titres[b1].idTitre)
-                                                            fwrite(&titres[i], sizeof(titres[i]), 1, nfile);
 
-                                                        else
-                                                            fwrite(&titres[b1], sizeof(titres[b1]), 1, nfile);
-                                                    }
-                                                    fclose(nfile);
-                                                    rename("fichierNouveauTitres.txt", "fichierDesTitresPermission.txt");
-                                                    (trajets[L1[0]].placesReservees)+=1;
-                                                    remove("fichierDesTrajets.txt");
-                                                    nfile = fopen("fichierNouveauTrajets.txt","a");
-                                                    for (int i=0; i<nbTrajets; i++){
-                                                        if (strcmp(trajets[i].idTrajet,trajets[L1[0]].idTrajet)!=0)
-                                                            fwrite(&trajets[i], sizeof(trajets[i]), 1, nfile);
-
-                                                        else
-                                                            fwrite(&trajets[L1[0]], sizeof(trajets[L1[0]]), 1, nfile);
-                                                    }
-                                                    fclose(nfile);
-                                                    rename("fichierNouveauTrajets.txt", "fichierDesTrajets.txt");
-                                                    file2 = fopen("fichierTickets.txt", "a");
-                                                    fwrite(&ticket, sizeof(ticket), 1, file2);
-                                                    fclose(file2);
-                                                    printf("\nLa reservation est bien faite. Merci.\n");
-                                                    return 0;
-                                                break;
-                                                case 2:
-                                                    printf("\nRetour vers le menu principal.\n");
-                                                    return 0;
-                                                break;
-                                                default:
-                                                    printf("choix invalide, veuillez reessayer!\n");
-                                                    allerSimple();
-                                                break;
-                                                }
-                                            }while(ch17!=2);
-                                        }
-                                        else
-                                            printf("\nCe titre de permission est deja utilise!");
-                                    }
-                                    else
-                                        printf("\nVous ne pouvez pas utiliser ce titre de permission pour acheter ce billet.");
-                                }
-                                else
-                                    printf("\nLe titre de permission ayant cet identifiant n'existe pas.");
-                            return 0;
-                            break;
-                            case 2:
-                                (trajets[L1[0]].placesReservees)+=1;
-                                remove("fichierDesTrajets.txt");
-                                nfile = fopen("fichierNouveauTrajets.txt","a");
-                                for (int i=0; i<nbTrajets; i++){
-                                    if (strcmp(trajets[i].idTrajet,trajets[L1[0]].idTrajet)!=0)
-                                        fwrite(&trajets[i], sizeof(trajets[i]), 1, nfile);
-
-                                    else
-                                        fwrite(&trajets[L1[0]], sizeof(trajets[L1[0]]), 1, nfile);
-                                }
-                                fclose(nfile);
-                                rename("fichierNouveauTrajets.txt", "fichierDesTrajets.txt");
-                                file2 = fopen("fichierTickets.txt", "a");
-                                fwrite(&ticket, sizeof(ticket), 1, file2);
-                                fclose(file2);
-                                printf("\nVoici le billet de votre voyage:\n");
-                                printf("\nVille de depart : %s", trajets[L1[0]].villeDep);
-                                printf("\nVille d'arrivee : %s", trajets[L1[0]].villeArr);
-                                printf("\nPrix : %f DH", trajets[L1[0]].Prix);
-                                printf("\nTrain : %s", trajets[L1[0]].trajetTrain.nomTrain);
-                                printf("\nHeure de depart : %s:%s", trajets[L1[0]].heureDep.heure, trajets[L1[0]].heureDep.minute);
-                                printf("\nHeure d'arrivee : %s:%s", trajets[L1[0]].heureArr.heure, trajets[L1[0]].heureArr.minute);
-                                printf("\nDuree : %sh%smin", trajets[L1[0]].Duree.heure, trajets[L1[0]].Duree.minute);
-                                printf("\nDate : %s/%s/%s", trajets[L1[0]].dateTrajet.jour, trajets[L1[0]].dateTrajet.mois, trajets[L1[0]].dateTrajet.annee);
-                                printf("\n");
-                                printf("\nLa reservation est bien faite. Merci.\n");
-                            return 0;
-                            break;
-                            default:
-                                printf("choix invalide, veuillez réessayer!\n");
-                                allerSimple();
-                            break;
-                        }
-                        }while(ch15!=2);
                     break;
                     default:
                         printf("choix invalide, veuillez réessayer!\n");
@@ -1298,11 +1960,11 @@ int allerRetour()
             }
             }
             else
-                printf("\nPas de trains disponibles pour la date de retour");
+
     }
     else
         printf("\nPas de trains disponibles.");
-}
+}*/
 
 int espaceReservation()
 {
