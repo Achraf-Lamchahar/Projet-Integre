@@ -856,6 +856,157 @@ int allerSimpleVerifi(int nbTrajets, STrajet trajets[50], char buff[15], STicket
     }
 }
 
+/*int doubleReservation(int C1, int c2, STrajet trajets[50], STicket ticket, STitres titres[50])
+{
+    int ch24;
+    do
+    {
+        printf("\nvoulez-vous l'ajouter au panier?");
+        printf("\nOui           |        taper<1>");
+        printf("\nNon           |        taper<2>");
+        printf("\n=====> ");
+        scanf("%d", &ch24);
+        switch(ch24)
+        {
+        case 1:
+            printf("\n\tBillet d'aller:                                      \tBiller de retour:");
+            printf("\nVille de depart : %s                                  Ville de depart : %s", trajets[L1[0]].villeDep, trajets[L2[0]].villeDep);
+            printf("\nVille d'arrivee : %s                                  Ville d'arrivee : %s", trajets[L1[0]].villeArr, trajets[L2[0]].villeArr);
+            printf("\nPrix : %f DH                                          Prix : %f DH", trajets[L1[0]].Prix, (trajets[L2[0]].Prix)*0.3);
+            printf("\nTrain : %s                                            Train : %s", trajets[L1[0]].trajetTrain.nomTrain, trajets[L2[0]].trajetTrain.nomTrain);
+            printf("\nHeure de depart : %s:%s                               Heure de depart : %s:%s", trajets[L1[0]].heureDep.heure, trajets[L1[0]].heureDep.minute, trajets[L2[0]].heureDep.heure, trajets[L2[0]].heureDep.minute);
+            printf("\nHeure d'arrivee : %s:%s                               Heure d'arrivee : %s:%s", trajets[L1[0]].heureArr.heure, trajets[L1[0]].heureArr.minute, trajets[L2[0]].heureArr.heure, trajets[L2[0]].heureArr.minute);
+            printf("\nDuree : %sh%smin                                      Duree : %sh%smin", trajets[L1[0]].Duree.heure, trajets[L1[0]].Duree.minute, trajets[L2[0]].Duree.heure, trajets[L2[0]].Duree.minute);
+            printf("\nDate : %s/%s/%s                                       Date : %s/%s/%s\n", trajets[L1[0]].dateTrajet.jour, trajets[L1[0]].dateTrajet.mois, trajets[L1[0]].dateTrajet.annee, trajets[L2[0]].dateTrajet.jour, trajets[L2[0]].dateTrajet.mois, trajets[L2[0]].dateTrajet.annee);
+            printf("\n                         Montant total: %f DH", (trajets[L1[0]].Prix)+(trajets[L2[0]].Prix));
+            int ch25;
+            do
+            {
+                printf("\nVoulez-vous completer l'achat des deux billets?");
+                printf("\n1-Oui         |       taper<1>");
+                printf("\n2-Non         |       taper<2>");
+                printf("\n====> "); scanf("%d", &ch25);
+                switch(ch25)
+                {
+                case 1:
+                    strcpy(NVticket.nom,ticket.nom);
+                    strcpy(NVticket.prenom,ticket.prenom);
+                    strcpy(NVticket.stationDep,ticket.stationArr);
+                    strcpy(NVticket.stationArr,ticket.stationDep);
+                    strcpy(NVticket.dateDep.jour,dateRetJour);
+                    strcpy(NVticket.dateDep.mois,dateRetMois);
+                    strcpy(NVticket.dateDep.annee,dateRetAnnee);
+
+                    (titres[b1].nbrUtilisation)+=2;
+                    remove("fichierDesTitresPermission.txt");
+                    nfile = fopen("fichierNouveauTitres.txt","a");
+                    for (int i=0; i<nbTitres; i++){
+                        if (titres[i].idTitre!=titres[b1].idTitre)
+                            fwrite(&titres[i], sizeof(titres[i]), 1, nfile);
+
+                        else
+                            fwrite(&titres[b1], sizeof(titres[b1]), 1, nfile);
+                    }
+                    fclose(nfile);
+                    rename("fichierNouveauTitres.txt", "fichierDesTitresPermission.txt");
+                    (trajets[L1[0]].placesReservees)+=1;
+                    (trajets[L2[0]].placesReservees)+=1;
+                    remove("fichierDesTrajets.txt");
+                    nfile = fopen("fichierNouveauTrajets.txt","a");
+                    for (int i=0; i<nbTrajets; i++){
+                        if (strcmp(trajets[i].idTrajet,trajets[L1[0]].idTrajet)==0)
+                            fwrite(&trajets[L1[0]], sizeof(trajets[L1[0]]), 1, nfile);
+                        else
+                        {
+                            if(strcmp(trajets[i].idTrajet,trajets[L2[0]].idTrajet)==0)
+                                fwrite(&trajets[L2[0]], sizeof(trajets[L2[0]]), 1, nfile);
+                            else
+                                fwrite(&trajets[i], sizeof(trajets[i]), 1, nfile);
+                        }
+                    }
+                    fclose(nfile);
+                    rename("fichierNouveauTrajets.txt", "fichierDesTrajets.txt");
+                    file2 = fopen("fichierTickets.txt", "a");
+                    fwrite(&ticket, sizeof(ticket), 1, file2);
+                    fwrite(&NVticket, sizeof(NVticket), 1, file2);
+                    fclose(file2);
+                    printf("\nLa reservation est bien faite. Merci.\n");
+                    return 0;
+                break;
+                case 2:
+                    printf("\nRetour vers le menu principal.\n");
+                    return 0;
+                break;
+                default:
+                    printf("choix invalide, veuillez reessayer!\n");
+                    allerRetour();
+                break;
+                }
+            }while(ch25!=2);
+        break;
+        case 2:
+            ;
+            int ch22;
+            printf("\nVoulez-vous completer l'achat du billet d'aller?");
+            printf("\n1-Oui         |       taper<1>");
+            printf("\n2-Non         |       taper<2>");
+            printf("\n====> "); scanf("%d", &ch22);
+            switch(ch22)
+            {
+            case 1:
+                ;
+                char buf[15];
+                strcpy(buf,titres[b1].villeDep);
+                strcpy(titres[b1].villeDep,titres[b1].villeArr);
+                strcpy(titres[b1].villeArr,buf);
+                (titres[b1].nbrUtilisation)+=1;
+                remove("fichierDesTitresPermission.txt");
+                nfile = fopen("fichierNouveauTitres.txt","a");
+                for (int i=0; i<nbTitres; i++){
+                    if (titres[i].idTitre!=titres[b1].idTitre)
+                        fwrite(&titres[i], sizeof(titres[i]), 1, nfile);
+
+                    else
+                        fwrite(&titres[b1], sizeof(titres[b1]), 1, nfile);
+                }
+                fclose(nfile);
+                rename("fichierNouveauTitres.txt", "fichierDesTitresPermission.txt");
+                (trajets[L1[0]].placesReservees)+=1;
+                remove("fichierDesTrajets.txt");
+                nfile = fopen("fichierNouveauTrajets.txt","a");
+                for (int i=0; i<nbTrajets; i++){
+                    if (strcmp(trajets[i].idTrajet,trajets[L1[0]].idTrajet)!=0)
+                        fwrite(&trajets[i], sizeof(trajets[i]), 1, nfile);
+
+                    else
+                        fwrite(&trajets[L1[0]], sizeof(trajets[L1[0]]), 1, nfile);
+                }
+                fclose(nfile);
+                rename("fichierNouveauTrajets.txt", "fichierDesTrajets.txt");
+                file2 = fopen("fichierTickets.txt", "a");
+                fwrite(&ticket, sizeof(ticket), 1, file2);
+                fclose(file2);
+                printf("\nLa reservation est bien faite. Merci.\n");
+                return 0;
+            break;
+            case 2:
+                printf("\nRetour vers le menu principal.\n");
+                return 0;
+            break;
+            default:
+                printf("choix invalide, veuillez reessayer!\n");
+                allerRetour();
+            break;
+            }
+        break;
+        default:
+            printf("choix invalide, veuillez reessayer!\n");
+            allerRetour();
+        break;
+        }
+    }while(ch24!=2);
+}*/
+
 void allerSimple()
 {
     char buffer[6], buff[15];
@@ -896,6 +1047,7 @@ void allerSimple()
         printf("\nPas de trains disponibles.");
 }
 
+
 int allerRetour()
 {
     int ch21;
@@ -909,6 +1061,7 @@ int allerRetour()
         switch(ch21)
         {
         case 1:
+            ;
             char buffer[6], buffer1[6], buff[15], buff1[15], dateRetJour[3], dateRetMois[3], dateRetAnnee[5];
             printf("\nVeillez remplir les champs suivants:");
             printf("\nNom: "); scanf("%s", &ticket.nom);
@@ -1040,7 +1193,7 @@ int allerRetour()
                                             switch(ch17)
                                             {
                                             case 1:
-                                                strcpy(NVtrajet.idTrajet,trajets[L1[0]].idTrajet);
+                                                /*strcpy(NVtrajet.idTrajet,trajets[L1[0]].idTrajet);
                                                 strcpy(NVtrajet.idTrajetJour,trajets[L1[0]].idTrajetJour);
                                                 strcpy(NVtrajet.villeDep,trajets[L1[0]].villeDep);
                                                 strcpy(NVtrajet.villeArr,trajets[L1[0]].villeArr);
@@ -1057,7 +1210,7 @@ int allerRetour()
                                                 strcpy(NVtrajet.dateTrajet.mois,trajets[L1[0]].dateTrajet.mois);
                                                 strcpy(NVtrajet.dateTrajet.annee,trajets[L1[0]].dateTrajet.annee);
                                                 NVtrajet.Prix=(trajets[L1[0]].Prix)*0.3;
-                                                NVtrajet.placesReservees=trajets[L1[0]].placesReservees;
+                                                NVtrajet.placesReservees=trajets[L1[0]].placesReservees;*/
 
                                                 printf("\n           <<<<<Retour:>>>>>");
                                                 printf("\n\nTrains proposes pour la date de retour: \n");
@@ -1083,9 +1236,9 @@ int allerRetour()
                                                 {
                                                 case 0:
                                                     printf("\nLes trains de la date de retour sont tous pleins.");
+                                                    int ch22;
                                                     do
                                                     {
-                                                        int ch22;
                                                         printf("\nVoulez-vous completer l'achat du billet d'aller?");
                                                         printf("\n1-Oui         |       taper<1>");
                                                         printf("\n2-Non         |       taper<2>");
@@ -1140,6 +1293,7 @@ int allerRetour()
                                                     }while(ch22!=2);
                                                 break;
                                                 case 1:
+                                                    ;
                                                     int ch24;
                                                     do
                                                     {
@@ -1154,7 +1308,7 @@ int allerRetour()
                                                             printf("\n\tBillet d'aller:                                      \tBiller de retour:");
                                                             printf("\nVille de depart : %s                                  Ville de depart : %s", trajets[L1[0]].villeDep, trajets[L2[0]].villeDep);
                                                             printf("\nVille d'arrivee : %s                                  Ville d'arrivee : %s", trajets[L1[0]].villeArr, trajets[L2[0]].villeArr);
-                                                            printf("\nPrix : %f DH                                          Prix : %f DH", trajets[L1[0]].Prix, (trajets[L2[0]].Prix)*0.3);
+                                                            printf("\nPrix : %f DH                                          Prix : %f DH", (trajets[L1[0]].Prix)*0.3, (trajets[L2[0]].Prix)*0.3);
                                                             printf("\nTrain : %s                                            Train : %s", trajets[L1[0]].trajetTrain.nomTrain, trajets[L2[0]].trajetTrain.nomTrain);
                                                             printf("\nHeure de depart : %s:%s                               Heure de depart : %s:%s", trajets[L1[0]].heureDep.heure, trajets[L1[0]].heureDep.minute, trajets[L2[0]].heureDep.heure, trajets[L2[0]].heureDep.minute);
                                                             printf("\nHeure d'arrivee : %s:%s                               Heure d'arrivee : %s:%s", trajets[L1[0]].heureArr.heure, trajets[L1[0]].heureArr.minute, trajets[L2[0]].heureArr.heure, trajets[L2[0]].heureArr.minute);
@@ -1301,6 +1455,7 @@ int allerRetour()
                                                         switch(ch23)
                                                         {
                                                         case 1:
+                                                            ;
                                                             int imc;
                                                             printf("\nEntrer votre choix :"); scanf("%d", &imc);
                                                             while(imc>im){
@@ -1308,16 +1463,33 @@ int allerRetour()
                                                             }
                                                             printf("\nVoici le billet de ce voyage:\n");
                                                             printf("\nVille de depart : %s", trajets[L2[imc-1]].villeDep);
-                                                            printf("\nVille d'arrivee : %s", trajets[L2[imc-1].villeArr);
-                                                            printf("\nPrix : %f DH", (trajets[L2[imc-1].Prix)*0.3);
-                                                            printf("\nTrain : %s", trajets[L2[imc-1].trajetTrain.nomTrain);
-                                                            printf("\nHeure de depart : %s:%s", trajets[L2[imc-1].heureDep.heure, trajets[L2[imc-1].heureDep.minute);
-                                                            printf("\nHeure d'arrivee : %s:%s", trajets[L2[imc-1].heureArr.heure, trajets[L2[imc-1].heureArr.minute);
-                                                            printf("\nDuree : %sh%smin", trajets[L2[imc-1].Duree.heure, trajets[L2[imc-1].Duree.minute);
-                                                            printf("\nDate : %s/%s/%s", trajets[L2[imc-1].dateTrajet.jour, trajets[L2[imc-1].dateTrajet.mois, trajets[L2[imc-1].dateTrajet.annee);
+                                                            printf("\nVille d'arrivee : %s", trajets[L2[imc-1]].villeArr);
+                                                            printf("\nPrix : %f DH", (trajets[L2[imc-1]].Prix)*0.3);
+                                                            printf("\nTrain : %s", trajets[L2[imc-1]].trajetTrain.nomTrain);
+                                                            printf("\nHeure de depart : %s:%s", trajets[L2[imc-1]].heureDep.heure, trajets[L2[imc-1]].heureDep.minute);
+                                                            printf("\nHeure d'arrivee : %s:%s", trajets[L2[imc-1]].heureArr.heure, trajets[L2[imc-1]].heureArr.minute);
+                                                            printf("\nDuree : %sh%smin", trajets[L2[imc-1]].Duree.heure, trajets[L2[imc-1]].Duree.minute);
+                                                            printf("\nDate : %s/%s/%s", trajets[L2[imc-1]].dateTrajet.jour, trajets[L2[imc-1]].dateTrajet.mois, trajets[L2[imc-1]].dateTrajet.annee);
                                                             printf("\n");
 
-                                                            //________________________________________
+                                                            int ch26;
+                                                            printf("\nvoulez-vous l'ajouter au panier?");
+                                                            printf("\nOui           |        taper<1>");
+                                                            printf("\nNon           |        taper<2>");
+                                                            printf("\n=====> ");
+                                                            scanf("%d", &ch26);
+                                                            switch(ch26)
+                                                            {
+                                                            case 1:
+                                                            break;
+                                                            case 2:
+                                                            break;
+                                                            default:
+                                                            break;
+                                                            }
+
+
+
 
                                                         break;
                                                         case 2:
@@ -1349,10 +1521,13 @@ int allerRetour()
                         break;
                         }
                         }while(ch14!=2);
+                    break;
+                    default:
+                    break;
                     }
                 }
                 else
-                printf("\nPas de trains disponibles pour la date de retour");
+                printf("\nPas de trains disponibles pour la date de retour.\n");
                 int ch20;
                 do
                 {
